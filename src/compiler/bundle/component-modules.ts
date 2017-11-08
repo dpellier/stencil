@@ -1,6 +1,7 @@
 import { BuildConfig, BuildContext, ManifestBundle, ModuleFile } from '../../util/interfaces';
 import { hasError } from '../util';
 import { buildExpressionReplacer } from '../build/replacer';
+import localResolution from './rollup-plugins/local-resolution';
 import transpiledInMemoryPlugin from './rollup-plugins/transpile-in-memory';
 import stencilManifestsToInputs from './rollup-plugins/stencil-manifest-to-imports';
 import { createOnWarnFn, loadRollupDiagnostics } from '../../util/logger/logger-rollup';
@@ -53,6 +54,7 @@ async function bundleComponents(config: BuildConfig, ctx: BuildContext, manifest
         }),
         stencilManifestsToInputs(manifestBundle),
         transpiledInMemoryPlugin(config, ctx),
+        localResolution(config),
       ],
       onwarn: createOnWarnFn(ctx.diagnostics, manifestBundle.moduleFiles)
 
