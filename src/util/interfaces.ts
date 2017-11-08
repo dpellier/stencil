@@ -50,7 +50,7 @@ export interface EventEmitter<T= any> {
 
 export interface QueueApi {
   add: (cb: Function, priority?: number) => void;
-  flush: (cb?: Function) => void;
+  flush?: (cb?: Function) => void;
 }
 
 
@@ -320,6 +320,53 @@ export interface CompiledModeStyles {
 }
 
 
+export interface BuildConditionals {
+  coreId?: 'core' | 'core.pf';
+  fileName?: string;
+  polyfills?: boolean;
+  verboseError: boolean;
+  es5?: boolean;
+
+  // ssr
+  ssrServerSide: boolean;
+
+  // encapsulation
+  customSlot: boolean;
+  styles: boolean;
+  scopedCss: boolean;
+  shadowDom: boolean;
+
+  // vdom
+  render: boolean;
+  hostData: boolean;
+  hostTheme: boolean;
+
+  // decorators
+  element: boolean;
+  event: boolean;
+  listener: boolean;
+  method: boolean;
+  propConnect: boolean;
+  propContext: boolean;
+  propDidChange: boolean;
+  propWillChange: boolean;
+
+  // lifecycle events
+  cmpDidLoad: boolean;
+  cmpWillLoad: boolean;
+  cmpDidUpdate: boolean;
+  cmpWillUpdate: boolean;
+  cmpDidUnload: boolean;
+
+  // attr
+  observeAttr: boolean;
+
+  // svg
+  svg: boolean;
+
+}
+
+
 export interface BuildConfig {
   configPath?: string;
   sys?: StencilSystem;
@@ -471,6 +518,7 @@ export interface GraphData {
 export interface BuildContext {
   graphData?: GraphData;
   moduleFiles?: ModuleFiles;
+  manifestBundles?: ManifestBundle[];
   jsFiles?: FilesMap;
   cssFiles?: FilesMap;
   compiledFileCache?: ModuleBundles;
@@ -489,10 +537,12 @@ export interface BuildContext {
     registryJson?: string;
     indexHtml?: string;
     components_d_ts?: string;
+    [key: string]: string;
   };
   watcher?: FSWatcher;
   tsConfig?: any;
   hasIndexHtml?: boolean;
+  buildConditionals?: BuildConditionals;
 
   isRebuild?: boolean;
   isChangeBuild?: boolean;
@@ -838,7 +888,6 @@ export interface HostElement extends HTMLElement {
   $connected?: boolean;
   $defaultHolder?: Comment;
   $initLoad: () => void;
-  $instance?: ComponentInstance;
   $rendered?: boolean;
   $onRender: (() => void)[];
   componentOnReady?: (cb?: (elm: HostElement) => void) => Promise<void>;
@@ -848,18 +897,19 @@ export interface HostElement extends HTMLElement {
   // private members which are only internal to
   // this runtime and can be safely property renamed
   _ancestorHostElement?: HostElement;
+  _appliedStyles?: { [tagNameForStyles: string]: boolean };
   _hasDestroyed?: boolean;
   _hasLoaded?: boolean;
   _hostContentNodes?: HostContentNodes;
+  _instance?: ComponentInstance;
   _isQueuedForUpdate?: boolean;
   _listeners?: ComponentActiveListeners;
   _observer?: MutationObserver;
   _onReadyCallbacks: ((elm: HostElement) => void)[];
   _queuedEvents?: any[];
   _root?: HTMLElement | ShadowRoot;
-  _vnode: VNode;
-  _appliedStyles?: { [tagNameForStyles: string]: boolean };
   _values?: ComponentInternalValues;
+  _vnode: VNode;
 }
 
 
@@ -873,7 +923,6 @@ export interface DomApi {
   $head: HTMLHeadElement;
   $body: HTMLElement;
   $nodeType(node: any): number;
-  $createEvent(): CustomEvent;
   $createElement<K extends keyof HTMLElementTagNameMap>(tagName: K): HTMLElementTagNameMap[K];
   $createElement(tagName: any): HTMLElement;
   $createElementNS(namespace: string, tagName: any): any;
@@ -892,6 +941,13 @@ export interface DomApi {
   $setAttribute(elm: any, key: string, val: any): void;
   $setAttributeNS(elm: any, namespaceURI: string, qualifiedName: string, value: string): void;
   $removeAttribute(elm: any, key: string): void;
+  $elementRef?(elm: any, referenceName: string): any;
+  $parentElement?(node: Node): any;
+  $addEventListener?(elm: any, eventName: string, eventListener: any, useCapture: boolean, usePassive: boolean): Function;
+  $dispatchEvent?(elm: Element, eventName: string, data: any): void;
+  $supportsShadowDom?: boolean;
+  $supportsEventOptions?: boolean;
+  $attachShadow?(elm: any, shadowRootInitDict: ShadowRootInit): any;
 }
 
 export type Key = string | number;
@@ -938,13 +994,13 @@ export interface VNodeProdData {
 
 export interface PlatformApi {
   activeRender?: boolean;
-  attachStyles: (cmpMeta: ComponentMeta, modeName: string, elm: HostElement) => void;
+  attachStyles?: (cmpMeta: ComponentMeta, modeName: string, elm: HostElement) => void;
   connectHostElement: (cmpMeta: ComponentMeta, elm: HostElement) => void;
   defineComponent: (cmpMeta: ComponentMeta, HostElementConstructor?: any) => void;
+  domApi?: DomApi;
   emitEvent: (elm: Element, eventName: string, data: EventEmitterData) => void;
   getComponentMeta: (elm: Element) => ComponentMeta;
   getContextItem: (contextKey: string) => any;
-  getEventOptions: (useCapture?: boolean, usePassive?: boolean) => any;
   isClient?: boolean;
   isDefinedComponent?: (elm: Element) => boolean;
   isPrerender?: boolean;
@@ -1063,12 +1119,12 @@ export interface StencilSystem {
   }): Promise<string[]>;
   isGlob?(str: string): boolean;
   loadConfigFile?(configPath: string): BuildConfig;
-  minifyCss?(input: string): {
+  minifyCss?(input: string, opts?: any): {
     output: string;
     sourceMap?: any;
     diagnostics?: Diagnostic[];
   };
-  minifyJs?(input: string): {
+  minifyJs?(input: string, opts?: any): {
     output: string;
     sourceMap?: any;
     diagnostics?: Diagnostic[];

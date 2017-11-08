@@ -1,6 +1,7 @@
-import { BuildConfig, BuildContext, ComponentRegistry, Diagnostic, HostElement, PlatformApi,
-  HostContentNodes, HydrateOptions, HydrateResults, VNode } from '../util/interfaces';
+import { BuildConfig, BuildContext, ComponentRegistry, Diagnostic,
+  HostElement, HydrateOptions, HydrateResults, PlatformApi, VNode } from '../util/interfaces';
 import { connectedCallback } from '../core/instance/connected';
+import { createDomApi } from '../core/renderer/dom-api';
 import { createPlatformServer } from './platform-server';
 import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
 import { initLoad } from '../core/instance/init-component';
@@ -41,6 +42,7 @@ export function hydrateHtml(config: BuildConfig, ctx: BuildContext, registry: Co
     const dom = config.sys.createDom();
     const win = dom.parse(opts);
     const doc = win.document;
+    const domApi = createDomApi(win, doc);
 
     // normalize dir and lang before connecting elements
     // so that the info is their incase they read it at runtime
@@ -52,6 +54,7 @@ export function hydrateHtml(config: BuildConfig, ctx: BuildContext, registry: Co
       config,
       win,
       doc,
+      domApi,
       hydrateResults.diagnostics,
       opts.isPrerender,
       ctx
@@ -127,7 +130,7 @@ export function hydrateHtml(config: BuildConfig, ctx: BuildContext, registry: Co
     // patch the render function that we can add SSR ids
     // and to connect any elements it may have just appened to the DOM
     const pltRender = plt.render;
-    plt.render = function render(oldVNode: VNode, newVNode: VNode, isUpdate: boolean, hostContentNodes: HostContentNodes) {
+    plt.render = function render(oldVNode: VNode, newVNode, isUpdate, hostContentNodes, encapsulation) {
       let ssrId: number;
       let existingSsrId: string;
 
@@ -145,7 +148,7 @@ export function hydrateHtml(config: BuildConfig, ctx: BuildContext, registry: Co
         }
       }
 
-      newVNode = pltRender(oldVNode, newVNode, isUpdate, hostContentNodes, ENCAPSULATION.NoEncapsulation, ssrId);
+      newVNode = pltRender(oldVNode, newVNode, isUpdate, hostContentNodes, encapsulation, ssrId);
 
       connectElement(plt, <HostElement>newVNode.elm, connectedInfo, config.hydratedCssClass);
 

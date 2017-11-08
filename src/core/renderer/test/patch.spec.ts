@@ -2,7 +2,6 @@ import { h } from '../h';
 import { VNode } from '../vnode';
 import { toVNode } from '../to-vnode';
 import { mockElement, mockDomApi, mockRenderer, mockTextNode } from '../../../testing/mocks';
-import { testClasslist } from '../../../testing/utils';
 import { ENCAPSULATION, SVG_NS } from '../../../util/constants';
 const shuffle = require('knuth-shuffle').knuthShuffle;
 
@@ -38,7 +37,7 @@ describe('renderer', () => {
 
   describe('shadow dom', () => {
     const supportsShadowDom = true;
-    const patch = mockRenderer(null, domApi, supportsShadowDom);
+    const patch = mockRenderer(null, domApi);
 
     it('does not attachShadow on update render', () => {
       elm = mockElement('my-tag');
@@ -53,6 +52,10 @@ describe('renderer', () => {
     });
 
     it('attachShadow on first render', () => {
+      const domApi = mockDomApi();
+      domApi.$supportsShadowDom = true;
+      const patch = mockRenderer(null, domApi);
+
       elm = mockElement('my-tag');
       vnode0 = new VNode();
       vnode0.elm = elm;
@@ -68,6 +71,67 @@ describe('renderer', () => {
       expect(shadowOpts.mode).toBe('open');
     });
 
+  });
+
+  describe('functional component', () => {
+
+    it('should render a basic component', () => {
+      function functionalComp({children, ...props}: any) {
+        return h('span', props, children);
+      }
+
+      elm = mockElement('my-tag');
+      vnode0 = new VNode();
+      vnode0.elm = elm;
+      elm = patch(vnode0,
+        h('my-tag', null,
+          h(functionalComp, { class: 'functional-cmp' })
+        )
+      ).elm;
+      expect(elm.childNodes[0].tagName).toBe('SPAN');
+      expect(elm.childNodes[0].textContent).toBe('');
+      expect(elm.childNodes[0].className).toBe('functional-cmp');
+    });
+
+    it('should render as a sibling component', () => {
+      function functionalComp({children, ...props}: any) {
+        return h('span', props, children);
+      }
+
+      elm = mockElement('my-tag');
+      vnode0 = new VNode();
+      vnode0.elm = elm;
+      elm = patch(vnode0,
+        h('my-tag', null,
+          h('span', null, 'Test Child'),
+          h(functionalComp, { class: 'functional-cmp' })
+        )
+      ).elm;
+      expect(elm.childNodes[0].tagName).toBe('SPAN');
+      expect(elm.childNodes[0].textContent).toBe('Test Child');
+      expect(elm.childNodes[1].tagName).toBe('SPAN');
+      expect(elm.childNodes[1].textContent).toBe('');
+      expect(elm.childNodes[1].className).toBe('functional-cmp');
+    });
+    it('should render children', () => {
+      function functionalComp({children, ...props}: any) {
+        return h('span', props, children);
+      }
+
+      elm = mockElement('my-tag');
+      vnode0 = new VNode();
+      vnode0.elm = elm;
+      elm = patch(vnode0,
+        h('my-tag', null,
+          h(functionalComp, { class: 'functional-cmp' },
+            h('span', null, 'Test Child'),
+          )
+        )
+      ).elm;
+      expect(elm.childNodes[0].tagName).toBe('SPAN');
+      expect(elm.childNodes[0].className).toBe('functional-cmp');
+      expect(elm.childNodes[0].textContent).toBe('Test Child');
+    });
   });
 
   describe('scoped css', () => {
@@ -112,14 +176,14 @@ describe('renderer', () => {
       let vnode1 = h('div', null, h('i', { class: { i: true, am: true, a: true, 'class': true } }));
       elm = patch(vnode0, vnode1).elm;
 
-      testClasslist(elm.firstChild, ['i', 'am', 'a', 'class']);
+      expect(elm.firstChild).toMatchClasses(['i', 'am', 'a', 'class']);
     });
 
     it('should not remove duplicate css classes', () => {
       let vnode1 = h('div', { class: 'middle aligned center aligned' }, 'Hello');
       elm = patch(vnode0, vnode1).elm;
       expect(elm.className).toEqual('middle aligned center aligned');
-    })
+    });
 
     it('can create elements with text content', () => {
       elm = patch(vnode0, h('div', null, 'I am a string')).elm;
@@ -133,9 +197,8 @@ describe('renderer', () => {
       elm.classList.add('horse');
       var vnode1 = h('i', { class: {i: true, am: true } });
       elm = patch(vnode0, vnode1).elm;
-      expect(elm.classList.contains('i')).toBeTruthy();
-      expect(elm.classList.contains('am')).toBeTruthy();
-      expect(elm.classList.contains('horse')).toBeTruthy();
+
+      expect(elm).toMatchClasses(['i', 'am', 'horse']);
     });
 
     it('changes elements classes from previous vnode', () => {
@@ -143,9 +206,8 @@ describe('renderer', () => {
       var vnode2 = h('i', { class: { i: true, am: true, horse: false } });
       patch(vnode0, vnode1);
       elm = patch(vnode1, vnode2).elm;
-      expect(elm.classList.contains('i')).toBeTruthy();
-      expect(elm.classList.contains('am')).toBeTruthy();
-      expect(!elm.classList.contains('horse')).toBeTruthy();
+
+      expect(elm).toMatchClasses(['i', 'am']);
     });
 
     it('preserves memoized classes', () => {
@@ -153,13 +215,10 @@ describe('renderer', () => {
       var vnode1 = h('i', { class: cachedClass });
       var vnode2 = h('i', { class: cachedClass });
       elm = patch(vnode0, vnode1).elm;
-      expect(elm.classList.contains('i')).toBeTruthy();
-      expect(elm.classList.contains('am')).toBeTruthy();
-      expect(!elm.classList.contains('horse')).toBeTruthy();
+      expect(elm).toMatchClasses(['i', 'am']);
+
       elm = patch(vnode1, vnode2).elm;
-      expect(elm.classList.contains('i')).toBeTruthy();
-      expect(elm.classList.contains('am')).toBeTruthy();
-      expect(!elm.classList.contains('horse')).toBeTruthy();
+      expect(elm).toMatchClasses(['i', 'am']);
     });
 
     it('removes missing classes', () => {
@@ -167,9 +226,7 @@ describe('renderer', () => {
       var vnode2 = h('i', { class: {i: true, am: true } });
       patch(vnode0, vnode1);
       elm = patch(vnode1, vnode2).elm;
-      expect(elm.classList.contains('i')).toBeTruthy();
-      expect(elm.classList.contains('am')).toBeTruthy();
-      expect(!elm.classList.contains('horse')).toBeTruthy();
+      expect(elm).toMatchClasses(['i', 'am']);
     });
 
     it('removes classes when class set to empty string', () => {
@@ -177,9 +234,7 @@ describe('renderer', () => {
       var vnode2 = h('i', { class: '' });
       patch(vnode0, vnode1);
       elm = patch(vnode1, vnode2).elm;
-      expect(elm.classList.contains('i')).toBeFalsy();
-      expect(elm.classList.contains('am')).toBeFalsy();
-      expect(!elm.classList.contains('horse')).toBeTruthy();
+      expect(elm).toMatchClasses([]);
     });
 
 
