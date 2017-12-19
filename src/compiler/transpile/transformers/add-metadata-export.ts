@@ -8,8 +8,10 @@ import * as ts from 'typescript';
  * 2) Add static "encapsulation"
  * 3) Add static "host"
  * 4) Add static "events"
- * 5) Add h() fn: const { h } = Namespace;
- * 6) Export component class with tag names as PascalCase
+ * 5) Add static "style"
+ * 6) Add static "styleId"
+ * 7) Add h() fn: const { h } = Namespace;
+ * 8) Export component class with tag names as PascalCase
  */
 
 
