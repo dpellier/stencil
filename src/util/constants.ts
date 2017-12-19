@@ -35,6 +35,32 @@ export const enum PROP_TYPE {
 
 
 /**
+ * Public property names set within user component constructors
+ */
+export const enum PUBLIC_NAMES {
+  // do not change these, just don't
+  Any = 'Any',
+  Bubbles = 'bubbles',
+  Cancelable = 'cancelable',
+  Composed = 'composed',
+  Connect = 'connect',
+  Context = 'context',
+  DidChange = 'didChange',
+  Element = 'elementRef',
+  Events = 'events',
+  Host = 'host',
+  Method = 'method',
+  Mutable = 'mutable',
+  Name = 'name',
+  Properties = 'properties',
+  State = 'state',
+  Tag = 'is',
+  Type = 'type',
+  WillChange = 'willChange'
+}
+
+
+/**
  * JS Property to Attribute Name Options
  */
 export const enum ATTR_CASE {
@@ -49,16 +75,6 @@ export const enum PRIORITY {
   Low = 1,
   Medium = 2,
   High = 3,
-}
-
-
-/**
- * Slot Meta
- */
-export const enum SLOT_META {
-  NoSlots = 0,
-  HasSlots = 1,
-  HasNamedSlots = 2,
 }
 
 

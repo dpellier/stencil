@@ -3,7 +3,7 @@ import { BuildConfig, ComponentMeta, Diagnostic, DomApi, HostContentNodes, HostE
 import { createDomApi } from '../core/renderer/dom-api';
 import { createPlatformServer } from '../server/platform-server';
 import { createRendererPatch } from '../core/renderer/patch';
-import { initHostConstructor } from '../core/instance/init-host';
+import { initHostElementConstructor } from '../core/instance/init-host';
 import { initComponentInstance } from '../core/instance/init-component';
 import { noop } from '../util/helpers';
 import { validateBuildConfig } from '../util/validate-config';
@@ -407,8 +407,9 @@ export function mockDefine(plt: MockedPlatform, cmpMeta: ComponentMeta) {
   if (!cmpMeta.tagNameMeta) {
     cmpMeta.tagNameMeta = 'ion-cmp';
   }
-  if (!cmpMeta.componentModule) {
-    cmpMeta.componentModule = class {};
+  if (!cmpMeta.componentConstructor) {
+    cmpMeta.componentConstructor = class {} as any;
+
   }
   if (!cmpMeta.membersMeta) {
     cmpMeta.membersMeta = {};
@@ -447,7 +448,7 @@ function connectComponents(plt: MockedPlatform, node: HostElement) {
     if (!node.$connected) {
       const cmpMeta = (<PlatformApi>plt).getComponentMeta(node);
       if (cmpMeta) {
-        initHostConstructor((<PlatformApi>plt), cmpMeta, node);
+        initHostElementConstructor((<PlatformApi>plt), cmpMeta, node);
         (<HostElement>node).connectedCallback();
       }
     }

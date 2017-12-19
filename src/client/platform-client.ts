@@ -10,7 +10,7 @@ import { createQueueClient } from './queue-client';
 import { enableEventListener } from '../core/instance/listeners';
 import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
 import { h } from '../core/renderer/h';
-import { initHostConstructor } from '../core/instance/init-host';
+import { initHostElementConstructor } from '../core/instance/init-host';
 import { initModule } from '../core/instance/init-module';
 import { parseComponentLoaders } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
@@ -92,7 +92,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
       // only required when we're NOT using native shadow dom (slot)
       // this host element was NOT created with SSR
       // let's pick out the inner content for slot projection
-      assignHostContentSlots(domApi, cmpMeta, elm, elm.childNodes);
+      assignHostContentSlots(domApi, elm, elm.childNodes);
     }
 
     if (!domApi.$supportsShadowDom && cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
@@ -111,7 +111,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
       globalDefined[cmpMeta.tagNameMeta] = true;
 
       // initialize the members on the host element prototype
-      initHostConstructor(plt, cmpMeta, HostElementConstructor.prototype, hydratedCssClass);
+      initHostElementConstructor(plt, cmpMeta, HostElementConstructor.prototype, hydratedCssClass);
 
       if (Build.observeAttr) {
         // add which attributes should be observed
@@ -145,16 +145,17 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
 
   function loadBundle(cmpMeta: ComponentMeta, elm: HostElement, cb: Function) {
-    if (cmpMeta.componentModule) {
+    if (cmpMeta.componentConstructor) {
       // we're already all loaded up :)
       cb();
 
     } else {
       const bundleId = (cmpMeta.bundleIds[elm.mode] || (cmpMeta.bundleIds as any))[0];
-      const url = publicPath + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.js');
+      let url = publicPath + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.js');
+      url = 'http://localhost:3333/assets/my-name.js';
 
       // dynamic es module import() => woot!
-      __import(url).then(() => initModule(domApi, cmpMeta, module, cb)).catch(err => console.error(err));
+      __import(url).then(module => initModule(domApi, cmpMeta, module, cb)).catch(err => console.error(err));
     }
   }
 

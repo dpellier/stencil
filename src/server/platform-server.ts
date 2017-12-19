@@ -9,7 +9,6 @@ import { getAppFileName } from '../compiler/app/app-file-naming';
 import { getJsFile, normalizePath } from '../compiler/util';
 import { h } from '../core/renderer/h';
 import { noop } from '../util/helpers';
-import { parseComponentMeta } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
 
 
@@ -118,7 +117,7 @@ export function createPlatformServer(
     }
 
     // pick out all of the light dom nodes from the host element
-    assignHostContentSlots(domApi, cmpMeta, elm, elm.childNodes);
+    assignHostContentSlots(domApi, elm, elm.childNodes);
   }
 
 
@@ -142,9 +141,9 @@ export function createPlatformServer(
 
       registry[registryTag] = cmpMeta;
 
-      if (cmpMeta.componentModule) {
+      if (cmpMeta.componentConstructor) {
         // for unit testing
-        moduleImports[registryTag] = cmpMeta.componentModule;
+        moduleImports[registryTag] = cmpMeta.componentConstructor;
       }
     }
   }
@@ -161,14 +160,14 @@ export function createPlatformServer(
     // inject globals
     importFn(moduleImports, h, Context, appBuildDir);
 
-    for (var i = 2; i < args.length; i++) {
-      parseComponentMeta(registry, moduleImports, args[i], Context.attr);
-    }
+    // for (var i = 2; i < args.length; i++) {
+    //   parseComponentMeta(registry, moduleImports, args[i], Context.attr);
+    // }
 
     // fire off all the callbacks waiting on this bundle to load
     var callbacks = bundleCallbacks[bundleId];
     if (callbacks) {
-      for (i = 0; i < callbacks.length; i++) {
+      for (var i = 0; i < callbacks.length; i++) {
         callbacks[i]();
       }
       delete bundleCallbacks[bundleId];
@@ -189,7 +188,7 @@ export function createPlatformServer(
 
 
   function loadBundle(cmpMeta: ComponentMeta, elm: HostElement, cb: Function): void {
-    if (cmpMeta.componentModule) {
+    if (cmpMeta.componentConstructor) {
       // we already have the module loaded
       // (this is probably a unit test)
       cb();

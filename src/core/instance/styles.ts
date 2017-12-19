@@ -1,11 +1,10 @@
-import { ComponentMeta, ComponentMetaTemplates, DomApi, HostElement } from '../../util/interfaces';
+import { ComponentConstructor, ComponentMeta, ComponentMetaTemplates, DomApi, HostElement } from '../../util/interfaces';
 import { DEFAULT_STYLE_MODE, ENCAPSULATION } from '../../util/constants';
-import { getModuleStaticProperty } from '../../util/helpers';
 
 
-export function initStyleTemplate(domApi: DomApi, cmpMeta: ComponentMeta, componentModule: any) {
-  const styles = getModuleStaticProperty(componentModule, 'styles');
-  if (styles) {
+export function initStyleTemplate(domApi: DomApi, cmpMeta: ComponentMeta, componentConstructor: ComponentConstructor) {
+  const style = componentConstructor['style'];
+  if (style) {
     // create the template element which will hold the styles
     // adding it to the dom via <template> so that we can
     // clone this for each potential shadow root that will need these styles
@@ -13,11 +12,11 @@ export function initStyleTemplate(domApi: DomApi, cmpMeta: ComponentMeta, compon
     // but that's for the renderer to figure out later
     const templateElm = domApi.$createElement('template') as any;
 
-    templateElm._id = getStyleTemplateId(cmpMeta.tagNameMeta, getModuleStaticProperty(componentModule, 'styleMode'));
-    (cmpMeta as ComponentMetaTemplates)[templateElm.id] = templateElm;
+    const templateId = cmpMeta.tagNameMeta + (componentConstructor['styleMode'] || DEFAULT_STYLE_MODE);
+    (cmpMeta as ComponentMetaTemplates)[templateId] = templateElm;
 
     // add the style text to the template element's innerHTML
-    templateElm.innerHTML = '<style>' + styles + '</style>';
+    templateElm.innerHTML = '<style>' + style + '</style>';
 
     // add our new template element to the head
     // so it can be cloned later
@@ -26,9 +25,9 @@ export function initStyleTemplate(domApi: DomApi, cmpMeta: ComponentMeta, compon
 }
 
 
-export function attachStyles(domApi: DomApi, cmpMeta: ComponentMetaTemplates, modeName: string, elm: HostElement) {
-  const templateId = getStyleTemplateId(cmpMeta.tagNameMeta, modeName);
-  const templateElm = (cmpMeta as ComponentMetaTemplates)[templateId] as HTMLTemplateElement;
+export function attachStyles(domApi: DomApi, cmpMeta: ComponentMeta, modeName: string, elm: HostElement) {
+  const templateId = cmpMeta.tagNameMeta + (modeName || DEFAULT_STYLE_MODE);
+  const templateElm = (cmpMeta as ComponentMetaTemplates)[templateId];
 
   if (templateElm) {
     let styleContainerNode: HTMLElement = domApi.$head;
@@ -62,9 +61,4 @@ export function attachStyles(domApi: DomApi, cmpMeta: ComponentMetaTemplates, mo
       appliedStyles[templateId] = true;
     }
   }
-}
-
-
-function getStyleTemplateId(tag: string, modeName: string) {
-  return tag + (modeName || DEFAULT_STYLE_MODE);
 }

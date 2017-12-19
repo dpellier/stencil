@@ -1,6 +1,6 @@
 import { CssClassMap } from './jsx-interfaces';
 export { CssClassMap } from './jsx-interfaces';
-import { ENCAPSULATION, MEMBER_TYPE, PROP_TYPE, PRIORITY, RUNTIME_ERROR, SLOT_META } from './constants';
+import { ENCAPSULATION, MEMBER_TYPE, PROP_TYPE, PRIORITY, RUNTIME_ERROR } from './constants';
 
 
 export interface CoreContext {
@@ -97,19 +97,9 @@ export interface LoadComponentRegistry {
   [4]: ENCAPSULATION;
 
   /**
-   * slot
-   */
-  [5]: SLOT_META;
-
-  /**
    * listeners
    */
-  [6]: ComponentListenersData[];
-
-  /**
-   * load priority
-   */
-  [7]: PRIORITY;
+  [5]: ComponentListenersData[];
 }
 
 
@@ -329,7 +319,6 @@ export interface BuildConditionals {
 
   // dom
   shadowDom: boolean;
-  slot: boolean;
 
   // vdom
   hostData: boolean;
@@ -735,6 +724,56 @@ export interface MemberMeta {
 }
 
 
+export interface ImportedModule {
+  [pascalCaseTag: string]: ComponentConstructor;
+}
+
+
+export interface ComponentConstructor {
+  is?: string;
+  properties?: ComponentConstructorProperties;
+  events?: ComponentConstructorEvent[];
+  willChange?: PropChangeMeta[];
+  didChange?: PropChangeMeta[];
+  host?: any;
+  style?: string;
+  styleMode?: string;
+  encapsulation?: Encapsulation;
+}
+
+
+export type Encapsulation = 'shadow' | 'scoped' | 'none';
+
+
+export interface ComponentConstructorProperties {
+  [propName: string]: ComponentConstructorProperty;
+}
+
+
+export interface ComponentConstructorProperty {
+  attr?: string;
+  connect?: string;
+  context?: string;
+  elementRef?: boolean;
+  method?: boolean;
+  mutable?: boolean;
+  state?: boolean;
+  type?: PropertyType;
+}
+
+export type PropertyType = StringConstructor | BooleanConstructor | NumberConstructor | 'Any';
+
+
+export interface ComponentConstructorEvent {
+  name?: string;
+  method?: string;
+  bubbles?: boolean;
+  cancelable?: boolean;
+  composed?: boolean;
+}
+
+
+
 export interface MethodDecorator {
   (opts?: MethodOptions): any;
 }
@@ -819,18 +858,16 @@ export interface ComponentMeta {
   listenersMeta?: ListenMeta[];
   propsWillChangeMeta?: PropChangeMeta[];
   propsDidChangeMeta?: PropChangeMeta[];
-  encapsulation?: ENCAPSULATION;
   hostMeta?: HostMeta;
+  encapsulation?: ENCAPSULATION;
   assetsDirsMeta?: AssetsMeta[];
-  slotMeta?: SLOT_META;
-  loadPriority?: number;
-  componentModule?: any;
+  componentConstructor?: ComponentConstructor;
   componentClass?: string;
   jsdoc?: JSDoc;
 }
 
-export interface ComponentMetaTemplates extends ComponentMeta {
-  [key: string]: any;
+export interface ComponentMetaTemplates {
+  [key: string]: HTMLTemplateElement;
 }
 
 export interface JSDoc {
@@ -1001,7 +1038,7 @@ export interface HostElement extends HTMLElement {
 
 
 export interface RendererApi {
-  (oldVNode: VNode | Element, newVNode: VNode, isUpdate?: boolean, hostContentNodes?: HostContentNodes, encapsulation?: ENCAPSULATION, ssrId?: number): VNode;
+  (oldVNode: VNode | Element, newVNode: VNode, isUpdate?: boolean, hostContentNodes?: HostContentNodes, encapsulation?: Encapsulation, ssrId?: number): VNode;
 }
 
 
@@ -1082,7 +1119,7 @@ export interface VNodeProdData {
 
 export interface PlatformApi {
   activeRender?: boolean;
-  attachStyles?: (domApi: DomApi, cmpMeta: ComponentMeta, modeName: string, elm: HostElement) => void;
+  attachStyles?: (domApi: DomApi, cmpConstructor: ComponentConstructor, modeName: string, elm: HostElement) => void;
   connectHostElement: (cmpMeta: ComponentMeta, elm: HostElement) => void;
   defineComponent: (cmpMeta: ComponentMeta, HostElementConstructor?: any) => void;
   domApi?: DomApi;

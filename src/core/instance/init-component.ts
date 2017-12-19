@@ -11,7 +11,7 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement, cmpMet
   try {
     // using the user's component class, let's create a new instance
     cmpMeta = plt.getComponentMeta(elm);
-    elm._instance = new cmpMeta.componentModule();
+    elm._instance = new (cmpMeta.componentConstructor as any)();
 
     // ok cool, we've got an host element now, and a actual instance
     // and there were no errors creating the instance
@@ -23,7 +23,7 @@ export function initComponentInstance(plt: PlatformApi, elm: HostElement, cmpMet
     if (Build.event) {
       // add each of the event emitters which wire up instance methods
       // to fire off dom events from the host element
-      initEventEmitters(plt, cmpMeta.eventsMeta, elm._instance);
+      initEventEmitters(plt, cmpMeta.componentConstructor.events, elm._instance);
     }
 
     if (Build.listener) {

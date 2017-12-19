@@ -1,6 +1,6 @@
 import { enableEventListener } from '../core/instance/listeners';
 import { AppGlobal, BundleCallbacks, ComponentMeta, ComponentRegistry, CoreContext,
-  EventEmitterData, HostElement, LoadComponentRegistry, PlatformApi } from '../util/interfaces';
+  EventEmitterData, HostElement, LoadComponentRegistry, PlatformApi, DomApi } from '../util/interfaces';
 import { assignHostContentSlots } from '../core/renderer/slot';
 import { Build } from '../util/build-conditionals';
 import { createDomApi } from '../core/renderer/dom-api';
@@ -11,7 +11,7 @@ import { CustomStyle } from './css-shim/custom-style';
 import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
 import { h } from '../core/renderer/h';
 import { initCssVarShim } from './css-shim/init-css-shim';
-import { initHostConstructor } from '../core/instance/init-host';
+import { initHostElementConstructor } from '../core/instance/init-host';
 import { parseComponentMeta, parseComponentLoaders } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
@@ -113,7 +113,7 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
       globalDefined[tagName] = true;
 
       // initialize the members on the host element prototype
-      initHostConstructor(plt, cmpMeta, HostElementConstructor.prototype, hydratedCssClass);
+      initHostElementConstructor(plt, cmpMeta, HostElementConstructor.prototype, hydratedCssClass);
 
       if (Build.observeAttr) {
         // add which attributes should be observed
@@ -315,7 +315,7 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   }
 
   if (Build.styles) {
-    plt.attachStyles = (_: PlatformApi, cmpMeta: ComponentMeta, modeName: string, elm: HostElement) => {
+    plt.attachStyles = (domApi: DomApi, cmpMeta: ComponentMeta, modeName: string, elm: HostElement) => {
       if (Build.styles) {
         const templateElm = styleTemplates[cmpMeta.tagNameMeta + '_' + modeName] || styleTemplates[cmpMeta.tagNameMeta];
 

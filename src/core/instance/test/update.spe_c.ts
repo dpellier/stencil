@@ -40,14 +40,14 @@ describe('instance update', () => {
   it('should render state', () => {
     mockDefine(plt, {
       tagNameMeta: 'ion-test',
-      componentModule: class {
+      componentConstructor: class {
         value = '88';
         render() {
           return [
             h('ion-test', null, this.value)
           ];
         }
-      }
+      } as any
     });
 
     const node = mockConnect(plt, '<ion-test></ion-test>');
@@ -71,13 +71,13 @@ describe('instance update', () => {
 
     mockDefine(plt, {
       tagNameMeta: 'ion-test',
-      componentModule: class {
+      componentConstructor: class {
         render() {
           return [
             h('grasshopper', null, 'hi')
           ];
         }
-      }
+      } as any
     });
 
     const node = mockConnect(plt, '<ion-test></ion-test>');
@@ -91,7 +91,7 @@ describe('instance update', () => {
   it('should render text where null values exist in an array', () => {
     mockDefine(plt, {
       tagNameMeta: 'ion-test',
-      componentModule: class {
+      componentConstructor: class {
         render() {
           return [
             null,
@@ -99,7 +99,7 @@ describe('instance update', () => {
             null
           ];
         }
-      }
+      } as any
     });
 
     const node = mockConnect(plt, '<ion-test></ion-test>');
@@ -118,7 +118,7 @@ describe('instance update', () => {
   it('should not run renderer when no render() fn', () => {
     mockDefine(plt, {
       tagNameMeta: 'ion-test',
-      componentModule: class {}
+      componentConstructor: class {} as any
     });
 
     const node = mockConnect(plt, '<ion-test></ion-test>');
@@ -131,10 +131,10 @@ describe('instance update', () => {
   it('should create _instance', () => {
     const cmpMeta: ComponentMeta = {
       tagNameMeta: 'ion-test',
-      componentModule: class {
+      componentConstructor: class {
         constructor() {
         }
-      }
+      } as any
     };
     mockDefine(plt, cmpMeta);
 
