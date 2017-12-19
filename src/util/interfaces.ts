@@ -23,6 +23,7 @@ export interface AppGlobal {
   components?: LoadComponentRegistry[];
   loadComponents?: (bundleId: string, modulesImporterFn: ModulesImporterFn, cmp0?: LoadComponentMeta, cmp1?: LoadComponentMeta, cmp2?: LoadComponentMeta) => void;
   loadStyles?: (styleId: string, styleText: string) => void;
+  h?: Function;
 }
 
 
@@ -828,6 +829,10 @@ export interface ComponentMeta {
   jsdoc?: JSDoc;
 }
 
+export interface ComponentMetaTemplates extends ComponentMeta {
+  [key: string]: any;
+}
+
 export interface JSDoc {
   name: string;
   documentation: string;
@@ -890,6 +895,28 @@ export interface ComponentInstance {
   __el?: HostElement;
 
   [memberName: string]: any;
+}
+
+
+export abstract class ComponentModule {
+  abstract componentWillLoad?: () => Promise<void>;
+  abstract componentDidLoad?: () => void;
+  abstract componentWillUpdate?: () => Promise<void>;
+  abstract componentDidUpdate?: () => void;
+  abstract componentDidUnload?: () => void;
+
+  abstract render?: () => any;
+  abstract hostData?: () => VNodeData;
+
+  abstract mode?: string;
+  abstract color?: string;
+
+  abstract __el?: HostElement;
+
+  [memberName: string]: any;
+
+  abstract get is(): string;
+  abstract get properties(): string;
 }
 
 
@@ -1055,7 +1082,7 @@ export interface VNodeProdData {
 
 export interface PlatformApi {
   activeRender?: boolean;
-  attachStyles?: (cmpMeta: ComponentMeta, modeName: string, elm: HostElement) => void;
+  attachStyles?: (domApi: DomApi, cmpMeta: ComponentMeta, modeName: string, elm: HostElement) => void;
   connectHostElement: (cmpMeta: ComponentMeta, elm: HostElement) => void;
   defineComponent: (cmpMeta: ComponentMeta, HostElementConstructor?: any) => void;
   domApi?: DomApi;
