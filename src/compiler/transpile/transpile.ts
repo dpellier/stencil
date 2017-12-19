@@ -11,7 +11,6 @@ import { normalizeAssetsDir } from '../component-plugins/assets-plugin';
 import { normalizeStyles } from './normalize-styles';
 import { removeDecorators } from './transformers/remove-decorators';
 import { removeImports } from './transformers/remove-imports';
-import renameLifecycleMethods from './transformers/rename-lifecycle-methods';
 import * as ts from 'typescript';
 
 
@@ -82,7 +81,6 @@ export function transpileModule(config: BuildConfig, compilerOptions: ts.Compile
       before: [
         removeImports(),
         removeDecorators(),
-        renameLifecycleMethods(),
         addMetadataExport(moduleFiles)
       ]
     }
@@ -176,8 +174,7 @@ function transpileProgram(program: ts.Program, tsHost: ts.CompilerHost, config: 
   program.emit(undefined, tsHost.writeFile, undefined, false, {
     before: [
       removeDecorators(),
-      removeImports(),
-      renameLifecycleMethods()
+      removeImports()
     ]
   });
 
