@@ -107,7 +107,7 @@ export function createPlatformServer(
     }
   }
 
-  function connectHostElement(cmpMeta: ComponentMeta, elm: HostElement) {
+  function connectHostElement(_cmpMeta: ComponentMeta, elm: HostElement) {
     // set the "mode" property
     if (!elm.mode) {
       // looks like mode wasn't set as a property directly yet
@@ -154,7 +154,7 @@ export function createPlatformServer(
 
 
   App.loadComponents = function loadComponents(bundleId, importFn) {
-    const args = arguments;
+    // const args = arguments;
 
     // import component function
     // inject globals
@@ -187,7 +187,7 @@ export function createPlatformServer(
   };
 
 
-  function loadBundle(cmpMeta: ComponentMeta, elm: HostElement, cb: Function): void {
+  function loadBundle(cmpMeta: ComponentMeta, modeName: string, cb: Function): void {
     if (cmpMeta.componentConstructor) {
       // we already have the module loaded
       // (this is probably a unit test)
@@ -195,7 +195,7 @@ export function createPlatformServer(
       return;
     }
 
-    const bundleId: string = (cmpMeta.bundleIds[elm.mode] || cmpMeta.bundleIds[DEFAULT_STYLE_MODE] || (cmpMeta.bundleIds as any)).es2015;
+    const bundleId: string = (cmpMeta.bundleIds[modeName] || cmpMeta.bundleIds[DEFAULT_STYLE_MODE] || (cmpMeta.bundleIds as any)).es2015;
 
     if (loadedBundles[bundleId]) {
       // sweet, we've already loaded this bundle
@@ -230,7 +230,7 @@ export function createPlatformServer(
           config.sys.vm.runInContext(jsContent, win, { timeout: 10000 });
 
         }).catch(err => {
-          onError(err, RUNTIME_ERROR.LoadBundleError, elm, true);
+          onError(err, RUNTIME_ERROR.LoadBundleError, null, true);
         });
       }
     }

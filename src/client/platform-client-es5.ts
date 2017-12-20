@@ -1,7 +1,8 @@
 import { enableEventListener } from '../core/instance/listeners';
 import { AppGlobal, BundleCallbacks, ComponentMeta, ComponentRegistry, CoreContext,
-  EventEmitterData, HostElement, LoadComponentRegistry, PlatformApi, DomApi } from '../util/interfaces';
+  EventEmitterData, HostElement, LoadComponentRegistry, PlatformApi } from '../util/interfaces';
 import { assignHostContentSlots } from '../core/renderer/slot';
+import { attachStyles } from '../core/instance/styles';
 import { Build } from '../util/build-conditionals';
 import { createDomApi } from '../core/renderer/dom-api';
 import { createRendererPatch } from '../core/renderer/patch';
@@ -12,7 +13,7 @@ import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
 import { h } from '../core/renderer/h';
 import { initCssVarShim } from './css-shim/init-css-shim';
 import { initHostElementConstructor } from '../core/instance/init-host';
-import { parseComponentMeta, parseComponentLoaders } from '../util/data-parse';
+import { parseComponentLoaders } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
 
@@ -89,11 +90,11 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
     }
 
     // host element has been connected to the DOM
-    if (Build.slot && !domApi.$getAttribute(elm, SSR_VNODE_ID) && !useShadowDom(domApi.$supportsShadowDom, cmpMeta)) {
+    if (!domApi.$getAttribute(elm, SSR_VNODE_ID) && !useShadowDom(domApi.$supportsShadowDom, cmpMeta)) {
       // only required when we're NOT using native shadow dom (slot)
       // this host element was NOT created with SSR
       // let's pick out the inner content for slot projection
-      assignHostContentSlots(domApi, cmpMeta, elm, elm.childNodes);
+      assignHostContentSlots(domApi, elm, elm.childNodes);
     }
 
     if (!domApi.$supportsShadowDom && cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
@@ -149,25 +150,25 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   App.loadComponents = function loadComponents(bundleId, importFn) {
     // https://youtu.be/Z-FPimCmbX8?t=31
     // jsonp tag team back again from requested bundle
-    const args = arguments;
+    // const args = arguments;
 
     // import component function
     // inject globals
     importFn(moduleImports, h, Context, publicPath);
 
-    for (var i = 2; i < args.length; i++) {
-      // parse the external component data into internal component meta data
-      parseComponentMeta(registry, moduleImports, args[i]);
-    }
+    // for (var i = 2; i < args.length; i++) {
+    //   // parse the external component data into internal component meta data
+    //   parseComponentMeta(registry, moduleImports, args[i]);
+    // }
 
     // fire off all the callbacks waiting on this bundle to load
-    var callbacks = bundleCallbacks[bundleId];
-    if (callbacks) {
-      for (i = 0; i < callbacks.length; i++) {
-        callbacks[i]();
-      }
-      bundleCallbacks[bundleId] = null;
-    }
+    // var callbacks = bundleCallbacks[bundleId];
+    // if (callbacks) {
+    //   for (i = 0; i < callbacks.length; i++) {
+    //     callbacks[i]();
+    //   }
+    //   bundleCallbacks[bundleId] = null;
+    // }
 
     // remember that we've already loaded this bundle
     loadedBundles[bundleId] = true;
@@ -238,11 +239,11 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   }
 
 
-  function loadBundle(cmpMeta: ComponentMeta, elm: HostElement, cb: Function, bundleId?: string) {
+  function loadBundle(cmpMeta: ComponentMeta, modeName: string, cb: Function, bundleId?: string) {
     if (Build.es5) {
-      bundleId = (cmpMeta.bundleIds[elm.mode] || (cmpMeta.bundleIds as any))[1];
+      bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[1];
     } else {
-      bundleId = (cmpMeta.bundleIds[elm.mode] || (cmpMeta.bundleIds as any))[0];
+      bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[0];
     }
 
     if (loadedBundles[bundleId]) {
@@ -315,58 +316,7 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   }
 
   if (Build.styles) {
-    plt.attachStyles = (domApi: DomApi, cmpMeta: ComponentMeta, modeName: string, elm: HostElement) => {
-      if (Build.styles) {
-        const templateElm = styleTemplates[cmpMeta.tagNameMeta + '_' + modeName] || styleTemplates[cmpMeta.tagNameMeta];
-
-        if (templateElm) {
-          let styleContainerNode: HTMLElement = domApi.$head;
-
-          if (domApi.$supportsShadowDom) {
-            if (cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
-              styleContainerNode = (elm.shadowRoot as any);
-
-            } else {
-              while ((elm as Node) = domApi.$parentNode(elm)) {
-                if ((elm as any).host && (elm as any).host.shadowRoot) {
-                  styleContainerNode = (elm as any).host.shadowRoot;
-                  break;
-                }
-              }
-            }
-          }
-
-          const appliedStyles = ((styleContainerNode as HostElement)._appliedStyles = (styleContainerNode as HostElement)._appliedStyles || {});
-
-          if (!appliedStyles[templateElm.id]) {
-
-            if (Build.cssVarShim && !customStyle.supportsCssVars) {
-              // using the css shim, so let's parse through
-              // and update this style element w/ css var properties
-              const styleElm = domApi.$createElement('style');
-              styleElm.innerHTML = templateElm.content;
-
-              const insertReferenceNode = styleContainerNode.querySelector('[data-visibility]');
-              domApi.$insertBefore(styleContainerNode, styleElm, (insertReferenceNode && insertReferenceNode.nextSibling) || styleContainerNode.firstChild);
-
-              // add the style elm to the css shim
-              customStyle.addStyle(styleElm);
-
-            } else {
-              // not using the css shim
-              // we haven't added these styles to this element yet
-              const styleElm = templateElm.content.cloneNode(true) as HTMLStyleElement;
-
-              const insertReferenceNode = styleContainerNode.querySelector('[data-visibility]');
-              domApi.$insertBefore(styleContainerNode, styleElm, (insertReferenceNode && insertReferenceNode.nextSibling) || styleContainerNode.firstChild);
-            }
-
-            // remember we don't need to do this again for this element
-            appliedStyles[templateElm.id] = true;
-          }
-        }
-      }
-    };
+    plt.attachStyles = attachStyles;
   }
 
   return plt;
