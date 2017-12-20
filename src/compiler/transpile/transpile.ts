@@ -11,6 +11,7 @@ import { normalizeAssetsDir } from '../component-plugins/assets-plugin';
 import { normalizeStyles } from './normalize-styles';
 import { removeDecorators } from './transformers/remove-decorators';
 import { removeImports } from './transformers/remove-imports';
+import addAssetImports from './transformers/add-asset-imports';
 import * as ts from 'typescript';
 
 
@@ -83,7 +84,8 @@ export function transpileModule(config: BuildConfig, compilerOptions: ts.Compile
       before: [
         removeDecorators(),
         removeImports(),
-        addComponentMetadata(moduleFiles)
+        addComponentMetadata(moduleFiles),
+        addAssetImports(moduleFiles)
       ]
     }
   };
