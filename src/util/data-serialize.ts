@@ -1,6 +1,6 @@
 import { BundleIds, ComponentMeta, ComponentConstructorProperty, ComponentConstructorProperties, ComponentRegistry, CompiledModeStyles, EventMeta, ListenMeta,
   LoadComponentRegistry, MemberMeta, MembersMeta, ModuleFile, PropChangeMeta, StylesMeta } from './interfaces';
-import { DEFAULT_STYLE_MODE, ENCAPSULATION, MEMBER_TYPE, PROP_TYPE, PUBLIC_NAMES } from '../util/constants';
+import { DEFAULT_STYLE_MODE, ENCAPSULATION, MEMBER_TYPE, PROP_TYPE } from '../util/constants';
 import { wrapComponentImports } from '../compiler/bundle/component-modules';
 
 
@@ -248,36 +248,36 @@ function formatComponentConstructorProperty(memberMeta: MemberMeta) {
   const property: ComponentConstructorProperty = {};
 
   if (memberMeta.memberType === MEMBER_TYPE.State) {
-    property[PUBLIC_NAMES.State] = true;
+    property.state = true;
 
   } else if (memberMeta.memberType === MEMBER_TYPE.Element) {
-    property[PUBLIC_NAMES.Element] = true;
+    property.elementRef = true;
 
   } else if (memberMeta.memberType === MEMBER_TYPE.Method) {
-    property[PUBLIC_NAMES.Method] = true;
+    property.method = true;
 
   } else if (memberMeta.memberType === MEMBER_TYPE.PropConnect) {
-    property[PUBLIC_NAMES.Connect] = memberMeta.ctrlId;
+    property.connect = memberMeta.ctrlId;
 
   } else if (memberMeta.memberType === MEMBER_TYPE.PropContext) {
-    property[PUBLIC_NAMES.Context] = memberMeta.ctrlId;
+    property.context = memberMeta.ctrlId;
 
   } else {
     if (memberMeta.propType === PROP_TYPE.String) {
-      property[PUBLIC_NAMES.Type] = String;
+      property.type = String;
 
     } else if (memberMeta.propType === PROP_TYPE.Boolean) {
-      property[PUBLIC_NAMES.Type] = Boolean;
+      property.type = Boolean;
 
     } else if (memberMeta.propType === PROP_TYPE.Number) {
-      property[PUBLIC_NAMES.Type] = Number;
+      property.type = Number;
 
     } else if (memberMeta.propType === PROP_TYPE.Any) {
-      property[PUBLIC_NAMES.Type] = PUBLIC_NAMES.Any;
+      property.type = 'Any';
     }
 
     if (memberMeta.memberType === MEMBER_TYPE.PropMutable) {
-      property[PUBLIC_NAMES.Mutable] = true;
+      property.mutable = true;
     }
   }
 
