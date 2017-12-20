@@ -1,5 +1,6 @@
 import { convertValueToLiteral } from './util';
 import { ComponentMeta, ModuleFiles } from '../../../util/interfaces';
+import { formatComponentConstructorProperties } from '../../../util/data-serialize';
 import * as ts from 'typescript';
 
 
@@ -22,26 +23,16 @@ export default function addMetadataExport(moduleFiles: ModuleFiles): ts.Transfor
       if (!cmpMeta) {
         return classNode;
       }
-      const meta: ts.Expression = convertValueToLiteral({
-        tagNameMeta: cmpMeta.tagNameMeta,
-        hostMeta: cmpMeta.hostMeta,
-        encapsulation: cmpMeta.encapsulation,
-        stylesMeta: cmpMeta.stylesMeta,
-        assetsDirMeta: cmpMeta.assetsDirsMeta,
-        componentClass: cmpMeta.componentClass,
-        membersMeta: cmpMeta.membersMeta,
-        eventsMeta: cmpMeta.eventsMeta,
-        listenersMeta: cmpMeta.listenersMeta
-      });
 
-      const metadataProperty = ts.createProperty(
-        undefined,
-        [ts.createToken(ts.SyntaxKind.StaticKeyword)],
-        'metadata',
-        undefined,
-        undefined,
-        meta
-      );
+      const constructorMeta = formatComponentConstructorProperties(cmpMeta.membersMeta);
+
+      const newMembers = [
+        createGetter('is', cmpMeta.tagNameMeta),
+        createGetter('properties', constructorMeta),
+        createGetter('host', cmpMeta.hostMeta),
+        createGetter('style', '')
+      ];
+
       return ts.updateClassDeclaration(
         classNode,
         classNode.decorators,
@@ -49,7 +40,7 @@ export default function addMetadataExport(moduleFiles: ModuleFiles): ts.Transfor
         classNode.name,
         classNode.typeParameters,
         classNode.heritageClauses,
-        [ ...classNode.members, metadataProperty]
+        [ ...classNode.members, ...newMembers]
       );
     }
 
@@ -70,5 +61,18 @@ export default function addMetadataExport(moduleFiles: ModuleFiles): ts.Transfor
       return visit(tsSourceFile, metadata) as ts.SourceFile;
     };
   };
+}
 
+function createGetter(name: string, value: any) {
+  const returnExpression: ts.Expression = convertValueToLiteral(value);
+  return ts.createGetAccessor(
+    undefined,
+    [ts.createToken(ts.SyntaxKind.StaticKeyword)],
+    name,
+    undefined,
+    undefined,
+    ts.createBlock([
+      ts.createReturn(returnExpression)
+    ])
+  );
 }
