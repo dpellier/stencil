@@ -23,10 +23,16 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   const moduleImports: {[tag: string]: any} = {};
   const bundleCallbacks: BundleCallbacks = {};
   const loadedBundles: {[bundleId: string]: boolean} = {};
-  const styleTemplates: StyleTemplates = {};
   const pendingBundleRequests: {[url: string]: boolean} = {};
   const controllerComponents: {[tag: string]: HostElement} = {};
   const domApi = createDomApi(win, doc);
+
+  // set App Context
+  Context.isServer = Context.isPrerender = !(Context.isClient = true);
+  Context.window = win;
+  Context.location = win.location;
+  Context.document = doc;
+  Context.publicPath = publicPath;
 
   if (Build.listener) {
     Context.enableListener = (instance, eventName, enabled, attachTo) => enableEventListener(plt, instance, eventName, enabled, attachTo);
@@ -36,11 +42,8 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
     Context.emit = (elm: Element, eventName: string, data: EventEmitterData) => domApi.$dispatchEvent(elm, Context.eventNameFn ? Context.eventNameFn(eventName) : eventName, data);
   }
 
-  Context.isServer = Context.isPrerender = !(Context.isClient = true);
-  Context.window = win;
-  Context.location = win.location;
-  Context.document = doc;
-  Context.publicPath = publicPath;
+  // add the h() fn to the app's global namespace
+  App.h = h;
 
   // keep a global set of tags we've already defined
   const globalDefined: {[tag: string]: boolean} = (win as any).definedComponents = (win as any).definedComponents || {};
@@ -175,50 +178,6 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   };
 
 
-  if (Build.styles) {
-    App.loadStyles = function loadStyles() {
-      // jsonp callback from requested bundles
-      // either directly add styles to document.head or add the
-      // styles to a template tag to be cloned later for shadow roots
-      const args = arguments;
-      let templateElm: HTMLTemplateElement;
-
-      for (var i = 0; i < args.length; i += 2) {
-
-        if (Build.cssVarShim && !customStyle.supportsCssVars) {
-          // using the css shim
-          // so instead of creating actual template elements
-          // let's just store the template as a string instead
-          // same browsers that require css shim also have issues w/ templates
-          styleTemplates[args[i]] = {
-            id: `tmp-${args[i]}`,
-            content: args[i + 1]
-          };
-
-        } else {
-          // create the template element which will hold the styles
-          // adding it to the dom via <template> so that we can
-          // clone this for each potential shadow root that will need these styles
-          // otherwise it'll be cloned and added to the document
-          // but that's for the renderer to figure out later
-          // let's create a new template element
-          styleTemplates[args[i]] = (templateElm as any) = domApi.$createElement('template') as any;
-
-          // add the style text to the template element's innerHTML
-          templateElm.innerHTML = `<style>${args[i + 1]}</style>`;
-
-          // give the template element a unique id
-          templateElm.id = `tmp-${args[i]}`;
-
-          // add our new template element to the head
-          // so it can be cloned later
-          domApi.$appendChild(domApi.$head, templateElm);
-        }
-      }
-    };
-  }
-
-
   let customStyle: CustomStyle;
   let requestBundleQueue: Function[];
   if (Build.cssVarShim) {
@@ -320,12 +279,4 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   }
 
   return plt;
-}
-
-
-export interface StyleTemplates {
-  [tag: string]: {
-    id: string;
-    content: any;
-  };
 }
