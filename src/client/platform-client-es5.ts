@@ -15,6 +15,7 @@ import { initCssVarShim } from './css-shim/init-css-shim';
 import { initHostElementConstructor } from '../core/instance/init-host';
 import { parseComponentLoaders } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
+import { toDashCase } from '../util/helpers';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
 
 
@@ -153,31 +154,44 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
     // https://youtu.be/Z-FPimCmbX8?t=31
     // jsonp tag team back again from requested bundle
 
-    let bundleId: string;
+    let bundleIds: string[] = [];
 
     // requested component constructors in the passed in moduleImports object
     // let's add a reference to the constructors on each components metadata
     // each key in moduleImports is a PascalCased tag name
     Object.keys(moduleImports).forEach(pascalCasedTagName => {
-      const dashCasedTagName = '';
-      const cmpMeta = registry[dashCasedTagName];
-      if (cmpMeta && !cmpMeta.componentConstructor && moduleImports[pascalCasedTagName]) {
+      const cmpMeta = registry[toDashCase(pascalCasedTagName)];
+      if (cmpMeta && !cmpMeta.componentConstructor) {
         // connect the component's constructor to its metadata
         cmpMeta.componentConstructor = moduleImports[pascalCasedTagName];
+
+        if (Array.isArray(cmpMeta.bundleIds)) {
+          bundleIds = bundleIds.concat(cmpMeta.bundleIds);
+        } else {
+          Object.keys(cmpMeta.bundleIds).forEach(key => {
+            bundleIds = bundleIds.concat(cmpMeta.bundleIds[key] as any);
+          });
+        }
       }
     });
 
     // fire off all the callbacks waiting on this bundle to load
-    const callbacks = bundleCallbacks[bundleId];
-    if (callbacks) {
-      for (var i = 0; i < callbacks.length; i++) {
-        callbacks[i]();
+    bundleIds.forEach(bundleId => {
+      const callbacks = bundleCallbacks[bundleId];
+      if (callbacks) {
+        for (var i = 0; i < callbacks.length; i++) {
+          try {
+            callbacks[i]();
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        bundleCallbacks[bundleId] = null;
       }
-      bundleCallbacks[bundleId] = null;
-    }
 
-    // remember that we've already loaded this bundle
-    loadedBundles[bundleId] = true;
+      // remember that we've already loaded this bundle
+      loadedBundles[bundleId] = true;
+    });
   };
 
 
@@ -202,11 +216,7 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
 
 
   function loadBundle(cmpMeta: ComponentMeta, modeName: string, cb: Function, bundleId?: string) {
-    if (Build.es5) {
-      bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[1];
-    } else {
-      bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[0];
-    }
+    bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[1];
 
     if (loadedBundles[bundleId]) {
       // sweet, we've already loaded this bundle
