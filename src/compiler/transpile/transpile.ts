@@ -1,4 +1,4 @@
-import addMetadataExport from './transformers/add-metadata-export';
+import addComponentMetadata from './transformers/add-component-metadata';
 import { BuildConfig, BuildContext, Diagnostic, ModuleFile, ModuleFiles, TranspileModulesResults, TranspileResults } from '../../util/interfaces';
 import { buildError, catchError, isSassFile, normalizePath, hasError } from '../util';
 import { COMPONENTS_DTS } from '../build/distribution';
@@ -83,7 +83,7 @@ export function transpileModule(config: BuildConfig, compilerOptions: ts.Compile
       before: [
         removeDecorators(),
         removeImports(),
-        addMetadataExport(moduleFiles)
+        addComponentMetadata(moduleFiles)
       ]
     }
   };

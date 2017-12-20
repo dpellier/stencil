@@ -16,7 +16,7 @@ import * as ts from 'typescript';
  */
 
 
-export default function addMetadataExport(moduleFiles: ModuleFiles): ts.TransformerFactory<ts.SourceFile> {
+export default function addComponentMetadata(moduleFiles: ModuleFiles): ts.TransformerFactory<ts.SourceFile> {
 
   return (transformContext) => {
     function visitClass(classNode: ts.ClassDeclaration, cmpMeta: ComponentMeta) {
