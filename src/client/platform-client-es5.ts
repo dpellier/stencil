@@ -20,7 +20,6 @@ import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
 
 export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, win: Window, doc: Document, publicPath: string, hydratedCssClass: string): PlatformApi {
   const registry: ComponentRegistry = { 'html': {} };
-  const moduleImports: {[tag: string]: any} = {};
   const bundleCallbacks: BundleCallbacks = {};
   const loadedBundles: {[bundleId: string]: boolean} = {};
   const pendingBundleRequests: {[url: string]: boolean} = {};
@@ -150,28 +149,32 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   }
 
 
-  App.loadComponents = function loadComponents(bundleId, importFn) {
+  App.loadComponents = function loadComponents(moduleImports) {
     // https://youtu.be/Z-FPimCmbX8?t=31
     // jsonp tag team back again from requested bundle
-    // const args = arguments;
 
-    // import component function
-    // inject globals
-    importFn(moduleImports, h, Context, publicPath);
+    let bundleId: string;
 
-    // for (var i = 2; i < args.length; i++) {
-    //   // parse the external component data into internal component meta data
-    //   parseComponentMeta(registry, moduleImports, args[i]);
-    // }
+    // requested component constructors in the passed in moduleImports object
+    // let's add a reference to the constructors on each components metadata
+    // each key in moduleImports is a PascalCased tag name
+    Object.keys(moduleImports).forEach(pascalCasedTagName => {
+      const dashCasedTagName = '';
+      const cmpMeta = registry[dashCasedTagName];
+      if (cmpMeta && !cmpMeta.componentConstructor && moduleImports[pascalCasedTagName]) {
+        // connect the component's constructor to its metadata
+        cmpMeta.componentConstructor = moduleImports[pascalCasedTagName];
+      }
+    });
 
     // fire off all the callbacks waiting on this bundle to load
-    // var callbacks = bundleCallbacks[bundleId];
-    // if (callbacks) {
-    //   for (i = 0; i < callbacks.length; i++) {
-    //     callbacks[i]();
-    //   }
-    //   bundleCallbacks[bundleId] = null;
-    // }
+    const callbacks = bundleCallbacks[bundleId];
+    if (callbacks) {
+      for (var i = 0; i < callbacks.length; i++) {
+        callbacks[i]();
+      }
+      bundleCallbacks[bundleId] = null;
+    }
 
     // remember that we've already loaded this bundle
     loadedBundles[bundleId] = true;

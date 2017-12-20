@@ -51,6 +51,9 @@ export function createPlatformServer(
   // create the app global
   const App: AppGlobal = {};
 
+  // add the h() fn to the app's global namespace
+  App.h = h;
+
   // add the app's global to the window context
   win[config.namespace] = App;
 
@@ -154,36 +157,36 @@ export function createPlatformServer(
 
 
   App.loadComponents = function loadComponents(bundleId, importFn) {
-    // const args = arguments;
+    // https://youtu.be/Z-FPimCmbX8?t=31
+    // jsonp tag team back again from requested bundle
 
-    // import component function
-    // inject globals
-    importFn(moduleImports, h, Context, appBuildDir);
+    // add the component constructor to our
+    // commonjs style moduleImports object
+    importFn(moduleImports);
 
-    // for (var i = 2; i < args.length; i++) {
-    //   parseComponentMeta(registry, moduleImports, args[i], Context.attr);
-    // }
+    // requested component constructors are now on our moduleImports object
+    // let's add a reference to the constructors on each components metadata
+    // each key in moduleImports is a PascalCased tag name
+    Object.keys(moduleImports).forEach(pascalCasedTagName => {
+      const dashCasedTagName = '';
+      const cmpMeta = registry[dashCasedTagName];
+      if (cmpMeta && !cmpMeta.componentConstructor && moduleImports[pascalCasedTagName]) {
+        // connect the component's constructor to its metadata
+        cmpMeta.componentConstructor = moduleImports[pascalCasedTagName];
+      }
+    });
 
     // fire off all the callbacks waiting on this bundle to load
-    var callbacks = bundleCallbacks[bundleId];
+    const callbacks = bundleCallbacks[bundleId];
     if (callbacks) {
       for (var i = 0; i < callbacks.length; i++) {
         callbacks[i]();
       }
-      delete bundleCallbacks[bundleId];
+      bundleCallbacks[bundleId] = null;
     }
 
     // remember that we've already loaded this bundle
     loadedBundles[bundleId] = true;
-  };
-
-
-  App.loadStyles = function loadStyles() {
-    // jsonp callback from requested bundles
-    const args = arguments;
-    for (var i = 0; i < args.length; i += 2) {
-      stylesMap[args[i]] = args[i + 1];
-    }
   };
 
 

@@ -21,8 +21,7 @@ export interface CoreContext {
 
 export interface AppGlobal {
   components?: LoadComponentRegistry[];
-  loadComponents?: (bundleId: string, modulesImporterFn: ModulesImporterFn, cmp0?: LoadComponentMeta, cmp1?: LoadComponentMeta, cmp2?: LoadComponentMeta) => void;
-  loadStyles?: (styleId: string, styleText: string) => void;
+  loadComponents?: (imports: CommonJsModuleImports) => void;
   h?: Function;
 }
 
@@ -128,44 +127,6 @@ export interface ComponentMemberData {
    * controller id
    */
   [4]: string;
-}
-
-
-export interface LoadComponentMeta {
-  /**
-   * tag name (ION-BADGE)
-   */
-  [0]: string;
-
-  /**
-   * members
-   */
-  [1]: ComponentMemberData[];
-
-  /**
-   * host
-   */
-  [2]: any;
-
-  /**
-   * component instance events
-   */
-  [3]: ComponentEventData[];
-
-  /**
-   * prop WILL change
-   */
-  [4]: PropChangeMeta[];
-
-  /**
-   * prop DID change
-   */
-  [5]: PropChangeMeta[];
-
-  /**
-   * encapsulation
-   */
-  [6]: ENCAPSULATION;
 }
 
 
@@ -653,8 +614,8 @@ export interface LoggerTimeSpan {
 }
 
 
-export interface ModulesImporterFn {
-  (importer: any, h: Function, Core: CoreContext, publicPath: string): void;
+export interface CommonJsModuleImports {
+  [moduleId: string]: any;
 }
 
 
