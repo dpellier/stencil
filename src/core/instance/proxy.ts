@@ -65,8 +65,7 @@ export function proxyComponentInstance(plt: PlatformApi, cmpConstructor: Compone
 
 export function defineMember(
   plt: PlatformApi,
-  cmpConstructor:
-  ComponentConstructor,
+  cmpConstructor: ComponentConstructor,
   property: ComponentConstructorProperty,
   elm: HostElement,
   instance: ComponentInstance,

@@ -30,8 +30,7 @@ export function mockPlatform(win?: any, domApi?: DomApi) {
   const $mockedQueue = plt.queue = mockQueue();
   const $loadBundleQueue = mockQueue();
 
-  plt.loadBundle = function(a: any, elm: HostElement, cb: Function) {
-    a; elm;
+  plt.loadBundle = function(_: any, _modeName: string, cb: Function) {
     $loadBundleQueue.add(cb);
   };
 

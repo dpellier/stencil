@@ -739,6 +739,7 @@ export interface ComponentConstructor {
   style?: string;
   styleMode?: string;
   encapsulation?: Encapsulation;
+
 }
 
 
@@ -866,9 +867,6 @@ export interface ComponentMeta {
   jsdoc?: JSDoc;
 }
 
-export interface ComponentMetaTemplates {
-  [key: string]: HTMLTemplateElement;
-}
 
 export interface JSDoc {
   name: string;
@@ -1130,7 +1128,7 @@ export interface PlatformApi {
   isDefinedComponent?: (elm: Element) => boolean;
   isPrerender?: boolean;
   isServer?: boolean;
-  loadBundle: (cmpMeta: ComponentMeta, elm: HostElement, cb: Function) => void;
+  loadBundle: (cmpMeta: ComponentMeta, modeName: string, cb: Function) => void;
   onAppLoad?: (rootElm: HostElement, stylesMap: FilesMap, failureDiagnostic?: Diagnostic) => void;
   onError: (err: Error, type?: RUNTIME_ERROR, elm?: HostElement, appFailure?: boolean) => void;
   propConnect: (ctrlTag: string) => PropConnect;

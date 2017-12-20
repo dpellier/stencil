@@ -1,5 +1,5 @@
 import { AppGlobal, ComponentMeta, ComponentRegistry, CoreContext,
-  EventEmitterData, HostElement, LoadComponentRegistry, PlatformApi } from '../util/interfaces';
+  EventEmitterData, HostElement, LoadComponentRegistry, PlatformApi, ImportedModule } from '../util/interfaces';
 import { assignHostContentSlots } from '../core/renderer/slot';
 import { attachStyles } from '../core/instance/styles';
 import { Build } from '../util/build-conditionals';
@@ -7,11 +7,12 @@ import { createDomApi } from '../core/renderer/dom-api';
 import { createRendererPatch } from '../core/renderer/patch';
 import { createVNodesFromSsr } from '../core/renderer/ssr';
 import { createQueueClient } from './queue-client';
+import { dashToPascalCase } from '../util/helpers';
 import { enableEventListener } from '../core/instance/listeners';
 import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
 import { h } from '../core/renderer/h';
 import { initHostElementConstructor } from '../core/instance/init-host';
-import { initModule } from '../core/instance/init-module';
+import { initStyleTemplate } from '../core/instance/styles';
 import { parseComponentLoaders } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
@@ -88,7 +89,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
     }
 
     // host element has been connected to the DOM
-    if (Build.slot && !domApi.$getAttribute(elm, SSR_VNODE_ID) && !useShadowDom(domApi.$supportsShadowDom, cmpMeta)) {
+    if (!domApi.$getAttribute(elm, SSR_VNODE_ID) && !useShadowDom(domApi.$supportsShadowDom, cmpMeta)) {
       // only required when we're NOT using native shadow dom (slot)
       // this host element was NOT created with SSR
       // let's pick out the inner content for slot projection
@@ -144,18 +145,35 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   }
 
 
-  function loadBundle(cmpMeta: ComponentMeta, elm: HostElement, cb: Function) {
+  function loadBundle(cmpMeta: ComponentMeta, modeName: string, cb: Function) {
     if (cmpMeta.componentConstructor) {
       // we're already all loaded up :)
       cb();
 
     } else {
-      const bundleId = (cmpMeta.bundleIds[elm.mode] || (cmpMeta.bundleIds as any))[0];
-      let url = publicPath + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.js');
-      url = 'http://localhost:3333/assets/my-name.js';
+      const bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[0];
+      const url = publicPath + bundleId + ((useScopedCss(domApi.$supportsShadowDom, cmpMeta) ? '.sc' : '') + '.js');
 
       // dynamic es module import() => woot!
-      __import(url).then(module => initModule(domApi, cmpMeta, module, cb)).catch(err => console.error(err));
+      __import(url).then(importedModule => {
+
+        // async loading of the module is done
+        if (!cmpMeta.componentConstructor) {
+          // we haven't initialized the component module yet
+          // get the component constructor from the module
+          cmpMeta.componentConstructor = importedModule[dashToPascalCase(cmpMeta.tagNameMeta)];
+        }
+
+        if (Build.styles) {
+          // initialize this components styles
+          // it is possible for the same component to have difficult styles applied in the same app
+          initStyleTemplate(domApi, cmpMeta.componentConstructor);
+        }
+
+        // bundle all loaded up, let's continue
+        cb();
+
+      }).catch(err => console.error(err));
     }
   }
 
@@ -167,4 +185,4 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 }
 
 
-declare var __import: (url: string) => Promise<any>;
+declare var __import: (url: string) => Promise<ImportedModule>;
