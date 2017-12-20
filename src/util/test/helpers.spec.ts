@@ -1,20 +1,36 @@
-import { dashToPascalCase } from '../helpers';
+import { dashToPascalCase, toDashCase } from '../helpers';
 
 
 describe('util helpers', () => {
 
   describe('dashToPascalCase', () => {
 
-    it('alloneword => Alloneword', () => {
-      expect(dashToPascalCase('alloneword')).toBe('Alloneword');
+    it('madison-wisconsin => MadisonWisconsin', () => {
+      expect(dashToPascalCase('madison-wisconsin')).toBe('MadisonWisconsin');
     });
 
-    it('all-one-word => AllOneWord', () => {
-      expect(dashToPascalCase('all-one-word')).toBe('AllOneWord');
+    it('wisconsin => Wisconsin', () => {
+      expect(dashToPascalCase('wisconsin')).toBe('Wisconsin');
     });
 
-    it('All-One-Word => AllOneWord', () => {
-      expect(dashToPascalCase('all-one-word')).toBe('AllOneWord');
+  });
+
+  describe('toDashCase', () => {
+
+    it('MadisonWisconsin => madison-wisconsin', () => {
+      expect(toDashCase('MadisonWisconsin')).toBe('madison-wisconsin');
+    });
+
+    it('madisonWisconsin => madison-wisconsin', () => {
+      expect(toDashCase('madisonWisconsin')).toBe('madison-wisconsin');
+    });
+
+    it('Wisconsin => wisconsin', () => {
+      expect(toDashCase('Wisconsin')).toBe('wisconsin');
+    });
+
+    it('wisconsin => wisconsin', () => {
+      expect(toDashCase('wisconsin')).toBe('wisconsin');
     });
 
   });
