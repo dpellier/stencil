@@ -28,8 +28,10 @@ export default function addMetadataExport(moduleFiles: ModuleFiles): ts.Transfor
 
       const newMembers = [
         createGetter('is', cmpMeta.tagNameMeta),
-        createGetter('properties', constructorMeta),
+        createGetter('encapsulation', cmpMeta.encapsulation),
         createGetter('host', cmpMeta.hostMeta),
+        createGetter('events', cmpMeta.eventsMeta),
+        createGetter('properties', constructorMeta),
         createGetter('style', '')
       ];
 
