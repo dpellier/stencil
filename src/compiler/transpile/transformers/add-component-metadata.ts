@@ -1,4 +1,4 @@
-import { convertValueToLiteral } from './util';
+import { convertValueToLiteral, getImportNameMapFromStyleMeta, styleImport } from './util';
 import { ComponentMeta, ModuleFiles } from '../../../util/interfaces';
 import { formatComponentConstructorProperties } from '../../../util/data-serialize';
 import * as ts from 'typescript';
@@ -25,14 +25,21 @@ export default function addComponentMetadata(moduleFiles: ModuleFiles): ts.Trans
       }
 
       const constructorMeta = formatComponentConstructorProperties(cmpMeta.membersMeta);
+      const styleMeta = Object.keys(cmpMeta.stylesMeta)
+        .reduce((all, smn) => {
+          return all.concat(getImportNameMapFromStyleMeta(cmpMeta.stylesMeta[smn]));
+        }, [] as styleImport[])
+        .map(obj => obj.importName);
 
       const newMembers = [
-        createGetter('is', cmpMeta.tagNameMeta),
-        createGetter('encapsulation', cmpMeta.encapsulation),
-        createGetter('host', cmpMeta.hostMeta),
-        createGetter('events', cmpMeta.eventsMeta),
-        createGetter('properties', constructorMeta),
-        createGetter('style', '')
+        createGetter('is', convertValueToLiteral(cmpMeta.tagNameMeta)),
+        createGetter('encapsulation', convertValueToLiteral(cmpMeta.encapsulation)),
+        createGetter('host', convertValueToLiteral(cmpMeta.hostMeta)),
+        createGetter('events', convertValueToLiteral(cmpMeta.eventsMeta)),
+        createGetter('properties', convertValueToLiteral(constructorMeta)),
+        createGetter('style', ts.createArrayLiteral(
+          styleMeta.map(sm => ts.createIdentifier(sm))
+        ))
       ];
 
       return ts.updateClassDeclaration(
@@ -65,8 +72,7 @@ export default function addComponentMetadata(moduleFiles: ModuleFiles): ts.Trans
   };
 }
 
-function createGetter(name: string, value: any) {
-  const returnExpression: ts.Expression = convertValueToLiteral(value);
+function createGetter(name: string, returnExpression: ts.Expression) {
   return ts.createGetAccessor(
     undefined,
     [ts.createToken(ts.SyntaxKind.StaticKeyword)],

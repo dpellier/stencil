@@ -1,4 +1,5 @@
 import { ComponentMeta, ModuleFiles } from '../../../util/interfaces';
+import { getImportNameMapFromStyleMeta } from './util';
 import * as ts from 'typescript';
 
 
@@ -17,22 +18,24 @@ import * as ts from 'typescript';
 export default function addAssetImports(moduleFiles: ModuleFiles): ts.TransformerFactory<ts.SourceFile> {
   return () => {
     function visitFile(tsSourceFile: ts.SourceFile, cmpMeta: ComponentMeta) {
+      let styleImports: ts.Statement[] = [];
 
       if (cmpMeta.stylesMeta) {
-        const styleImports = Object.keys(cmpMeta.stylesMeta).map(sm => {
-          return cmpMeta.stylesMeta[sm].originalComponentPaths.map(ocp => {
+        styleImports = Object.keys(cmpMeta.stylesMeta).reduce((allStyleUrls, sm) => {
+          const styleObjList = getImportNameMapFromStyleMeta(cmpMeta.stylesMeta[sm]);
+          return allStyleUrls.concat(styleObjList.map((ocp) => {
             return ts.createImportDeclaration(
               undefined,
               undefined,
-              ts.createImportClause(ts.createIdentifier('styles'), undefined),
-              ts.createLiteral(ocp)
+              ts.createImportClause(ts.createIdentifier(ocp.importName), undefined),
+              ts.createLiteral(`./${ocp.relativePath}`)
             );
-          });
-        });
+          }));
+        }, [] as ts.ImportDeclaration[]);
       }
 
       tsSourceFile.statements = ts.createNodeArray([
-        importDeclaration,
+        ...styleImports,
         ...tsSourceFile.statements
       ]);
 
