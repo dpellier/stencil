@@ -1,4 +1,4 @@
-import { convertValueToLiteral, getImportNameMapFromStyleMeta, styleImport } from './util';
+import { convertValueToLiteral, getImportNameMapFromStyleMeta, StyleImport } from './util';
 import { ComponentMeta, ModuleFiles } from '../../../util/interfaces';
 import { formatComponentConstructorProperties } from '../../../util/data-serialize';
 import * as ts from 'typescript';
@@ -21,41 +21,38 @@ export default function addComponentMetadata(moduleFiles: ModuleFiles): ts.Trans
 
   return (transformContext) => {
     function visitClass(classNode: ts.ClassDeclaration, cmpMeta: ComponentMeta) {
-      if (!cmpMeta) {
-        return classNode;
-      }
-
-      const propertiesMeta = formatComponentConstructorProperties(cmpMeta.membersMeta);
-      const stylesMeta = Object.keys(cmpMeta.stylesMeta)
-        .reduce((all, smn) => {
-          return all.concat(getImportNameMapFromStyleMeta(cmpMeta.stylesMeta[smn]));
-        }, [] as styleImport[])
-        .map(obj => obj.importName);
-
-      // if no value then skip it
       let newMembers = [
         createGetter('is', convertValueToLiteral(cmpMeta.tagNameMeta)),
       ];
-
       if (cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
         newMembers.push(createGetter('encapsulation', convertValueToLiteral('shadow')));
       } else if (cmpMeta.encapsulation === ENCAPSULATION.ScopedCss) {
         newMembers.push(createGetter('encapsulation', convertValueToLiteral('scoped')));
       }
 
-      if (Object.keys(cmpMeta.hostMeta).length > 0) {
+      if (cmpMeta.hostMeta && Object.keys(cmpMeta.hostMeta).length > 0) {
         newMembers.push(createGetter('host', convertValueToLiteral(cmpMeta.hostMeta)));
       }
-      if (Object.keys(propertiesMeta).length > 0) {
+
+      const propertiesMeta = formatComponentConstructorProperties(cmpMeta.membersMeta);
+      if (propertiesMeta && Object.keys(propertiesMeta).length > 0) {
         newMembers.push(createGetter('properties', convertValueToLiteral(propertiesMeta)));
       }
-      if (cmpMeta.eventsMeta.length > 0) {
+      if (cmpMeta.eventsMeta && cmpMeta.eventsMeta.length > 0) {
         newMembers.push(createGetter('events', convertValueToLiteral(cmpMeta.eventsMeta)));
       }
-      if (stylesMeta.length > 0) {
-        newMembers.push(createGetter('style', ts.createArrayLiteral(
-          stylesMeta.map(sm => ts.createIdentifier(sm))
-        )));
+
+      if (cmpMeta.stylesMeta && Object.keys(cmpMeta.stylesMeta).length > 0) {
+        const stylesMeta = Object.keys(cmpMeta.stylesMeta)
+          .reduce((all, smn) => {
+            return all.concat(getImportNameMapFromStyleMeta(cmpMeta.stylesMeta[smn]));
+          }, [] as StyleImport[])
+          .map(obj => obj.importName);
+        if (stylesMeta.length > 0) {
+          newMembers.push(createGetter('style', ts.createArrayLiteral(
+            stylesMeta.map(sm => ts.createIdentifier(sm))
+          )));
+        }
       }
 
       return ts.updateClassDeclaration(
@@ -82,8 +79,10 @@ export default function addComponentMetadata(moduleFiles: ModuleFiles): ts.Trans
 
     return (tsSourceFile) => {
       const moduleFile = moduleFiles[tsSourceFile.fileName];
-      const metadata = moduleFile ? moduleFile.cmpMeta : null;
-      return visit(tsSourceFile, metadata) as ts.SourceFile;
+      if (moduleFile && moduleFile.cmpMeta) {
+        return visit(tsSourceFile, moduleFile.cmpMeta) as ts.SourceFile;
+      }
+      return tsSourceFile;
     };
   };
 }

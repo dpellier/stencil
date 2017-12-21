@@ -17,7 +17,7 @@ export function getEventDecoratorMeta(checker: ts.TypeChecker, classNode: ts.Cla
 
       if (metadata) {
         const symbol = checker.getSymbolAtLocation(member.name);
-        metadata.jsdoc = serializeSymbol(checker, symbol);
+        metadata.jsDocumentation = serializeSymbol(checker, symbol);
 
         membersMeta.push(metadata);
       }

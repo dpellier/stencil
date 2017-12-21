@@ -178,7 +178,9 @@ function transpileProgram(program: ts.Program, tsHost: ts.CompilerHost, config: 
   program.emit(undefined, tsHost.writeFile, undefined, false, {
     before: [
       removeDecorators(),
-      removeImports()
+      removeImports(),
+      addComponentMetadata(ctx.moduleFiles),
+      addAssetImports(ctx.moduleFiles)
     ]
   });
 

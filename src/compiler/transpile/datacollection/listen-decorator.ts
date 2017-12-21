@@ -14,11 +14,11 @@ export function getListenDecoratorMeta(checker: ts.TypeChecker, classNode: ts.Cl
         .forEach(([listenText, listenOptions]) => {
           listenText.split(',').forEach(eventName => {
             const symbol = checker.getSymbolAtLocation(member.name);
-            const jsdoc = serializeSymbol(checker, symbol);
+            const jsDocumentation = serializeSymbol(checker, symbol);
 
             listeners.push({
               ...validateListener(eventName.trim(), listenOptions, member.name.getText()),
-              jsdoc
+              jsDocumentation
             });
           });
         });

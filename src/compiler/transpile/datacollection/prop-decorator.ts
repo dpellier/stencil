@@ -80,7 +80,7 @@ export function getPropDecoratorMeta(checker: ts.TypeChecker, classNode: ts.Clas
         memberData.attribType = attribType;
         memberData.attribName = attribName;
         memberData.propType = propTypeFromTSType(attribType.text);
-        memberData.jsdoc = serializeSymbol(checker, symbol);
+        memberData.jsDocumentation = serializeSymbol(checker, symbol);
       }
 
       allMembers[attribName] = memberData;

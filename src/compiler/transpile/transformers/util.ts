@@ -111,6 +111,15 @@ export function objectMapToObjectLiteral(objMap: any): ts.ObjectLiteralExpressio
  * @returns Typescript Object Literal, Array Literal, String Literal, Boolean Literal, Numeric Literal
  */
 export function convertValueToLiteral(val: any) {
+  if (val === String) {
+    return ts.createIdentifier('String');
+  }
+  if (val === Number) {
+    return ts.createIdentifier('Number');
+  }
+  if (val === Boolean) {
+    return ts.createIdentifier('Boolean');
+  }
   if (Array.isArray(val)) {
     return arrayToArrayLiteral(val);
   }
@@ -126,6 +135,9 @@ export function convertValueToLiteral(val: any) {
  * @returns Typescript Object Literal Expression
  */
 function objectToObjectLiteral(obj: { [key: string]: any }): ts.ObjectLiteralExpression {
+  if (Object.keys(obj).length === 0) {
+    return ts.createObjectLiteral([]);
+  }
   const newProperties: ts.ObjectLiteralElementLike[] = Object.keys(obj).map((key: string): ts.ObjectLiteralElementLike => {
     return ts.createPropertyAssignment(ts.createLiteral(key), convertValueToLiteral(obj[key]) as ts.Expression);
   });
@@ -182,12 +194,12 @@ export function createImportNameFromUrl(importUrl: string) {
   return dashToPascalCase(baseName);
 }
 
-export interface styleImport {
+export interface StyleImport {
   importName: string;
   relativePath: string;
 }
 
-export function getImportNameMapFromStyleMeta(styleMeta: StyleMeta): styleImport[] {
+export function getImportNameMapFromStyleMeta(styleMeta: StyleMeta): StyleImport[] {
   return styleMeta.originalComponentPaths.map((ocp) => {
     const importName = createImportNameFromUrl(ocp) + 'Css';
     return {
