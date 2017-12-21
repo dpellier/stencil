@@ -11,10 +11,10 @@ export const isNumber = (v: any): v is number => typeof v === 'number';
 
 export const toLowerCase = (str: string) => str.toLowerCase();
 
-export const toDashCase = (str: string) => str.replace(/([A-Z])/g, (g) => '-' + toLowerCase(g[0]));
+export const toDashCase = (str: string) => str.replace(/([A-Z])/g, g => ' ' + toLowerCase(g[0])).trim().replace(/ /g, '-');
+
+export const dashToPascalCase = (str: string) => toLowerCase(str).split('-').map(segment => segment.charAt(0).toUpperCase() + segment.slice(1)).join('');
 
 export const toTitleCase = (str: string) => str.charAt(0).toUpperCase() + str.substr(1);
-
-export const dashToPascalCase = (word: string) => toLowerCase(word).split('-').map(segment => segment.charAt(0).toUpperCase() + segment.slice(1)).join('');
 
 export const noop = (): any => {};

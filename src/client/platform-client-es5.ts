@@ -15,18 +15,24 @@ import { initCssVarShim } from './css-shim/init-css-shim';
 import { initHostElementConstructor } from '../core/instance/init-host';
 import { parseComponentLoaders } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
+import { toDashCase } from '../util/helpers';
 import { useScopedCss, useShadowDom } from '../core/renderer/encapsulation';
 
 
 export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, win: Window, doc: Document, publicPath: string, hydratedCssClass: string): PlatformApi {
   const registry: ComponentRegistry = { 'html': {} };
-  const moduleImports: {[tag: string]: any} = {};
   const bundleCallbacks: BundleCallbacks = {};
   const loadedBundles: {[bundleId: string]: boolean} = {};
-  const styleTemplates: StyleTemplates = {};
   const pendingBundleRequests: {[url: string]: boolean} = {};
   const controllerComponents: {[tag: string]: HostElement} = {};
   const domApi = createDomApi(win, doc);
+
+  // set App Context
+  Context.isServer = Context.isPrerender = !(Context.isClient = true);
+  Context.window = win;
+  Context.location = win.location;
+  Context.document = doc;
+  Context.publicPath = publicPath;
 
   if (Build.listener) {
     Context.enableListener = (instance, eventName, enabled, attachTo) => enableEventListener(plt, instance, eventName, enabled, attachTo);
@@ -36,11 +42,8 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
     Context.emit = (elm: Element, eventName: string, data: EventEmitterData) => domApi.$dispatchEvent(elm, Context.eventNameFn ? Context.eventNameFn(eventName) : eventName, data);
   }
 
-  Context.isServer = Context.isPrerender = !(Context.isClient = true);
-  Context.window = win;
-  Context.location = win.location;
-  Context.document = doc;
-  Context.publicPath = publicPath;
+  // add the h() fn to the app's global namespace
+  App.h = h;
 
   // keep a global set of tags we've already defined
   const globalDefined: {[tag: string]: boolean} = (win as any).definedComponents = (win as any).definedComponents || {};
@@ -147,76 +150,49 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   }
 
 
-  App.loadComponents = function loadComponents(bundleId, importFn) {
+  App.loadComponents = function loadComponents(moduleImports) {
     // https://youtu.be/Z-FPimCmbX8?t=31
     // jsonp tag team back again from requested bundle
-    // const args = arguments;
 
-    // import component function
-    // inject globals
-    importFn(moduleImports, h, Context, publicPath);
+    let bundleIds: string[] = [];
 
-    // for (var i = 2; i < args.length; i++) {
-    //   // parse the external component data into internal component meta data
-    //   parseComponentMeta(registry, moduleImports, args[i]);
-    // }
+    // requested component constructors in the passed in moduleImports object
+    // let's add a reference to the constructors on each components metadata
+    // each key in moduleImports is a PascalCased tag name
+    Object.keys(moduleImports).forEach(pascalCasedTagName => {
+      const cmpMeta = registry[toDashCase(pascalCasedTagName)];
+      if (cmpMeta && !cmpMeta.componentConstructor) {
+        // connect the component's constructor to its metadata
+        cmpMeta.componentConstructor = moduleImports[pascalCasedTagName];
 
-    // fire off all the callbacks waiting on this bundle to load
-    // var callbacks = bundleCallbacks[bundleId];
-    // if (callbacks) {
-    //   for (i = 0; i < callbacks.length; i++) {
-    //     callbacks[i]();
-    //   }
-    //   bundleCallbacks[bundleId] = null;
-    // }
-
-    // remember that we've already loaded this bundle
-    loadedBundles[bundleId] = true;
-  };
-
-
-  if (Build.styles) {
-    App.loadStyles = function loadStyles() {
-      // jsonp callback from requested bundles
-      // either directly add styles to document.head or add the
-      // styles to a template tag to be cloned later for shadow roots
-      const args = arguments;
-      let templateElm: HTMLTemplateElement;
-
-      for (var i = 0; i < args.length; i += 2) {
-
-        if (Build.cssVarShim && !customStyle.supportsCssVars) {
-          // using the css shim
-          // so instead of creating actual template elements
-          // let's just store the template as a string instead
-          // same browsers that require css shim also have issues w/ templates
-          styleTemplates[args[i]] = {
-            id: `tmp-${args[i]}`,
-            content: args[i + 1]
-          };
-
+        if (Array.isArray(cmpMeta.bundleIds)) {
+          bundleIds = bundleIds.concat(cmpMeta.bundleIds);
         } else {
-          // create the template element which will hold the styles
-          // adding it to the dom via <template> so that we can
-          // clone this for each potential shadow root that will need these styles
-          // otherwise it'll be cloned and added to the document
-          // but that's for the renderer to figure out later
-          // let's create a new template element
-          styleTemplates[args[i]] = (templateElm as any) = domApi.$createElement('template') as any;
-
-          // add the style text to the template element's innerHTML
-          templateElm.innerHTML = `<style>${args[i + 1]}</style>`;
-
-          // give the template element a unique id
-          templateElm.id = `tmp-${args[i]}`;
-
-          // add our new template element to the head
-          // so it can be cloned later
-          domApi.$appendChild(domApi.$head, templateElm);
+          Object.keys(cmpMeta.bundleIds).forEach(key => {
+            bundleIds = bundleIds.concat(cmpMeta.bundleIds[key] as any);
+          });
         }
       }
-    };
-  }
+    });
+
+    // fire off all the callbacks waiting on this bundle to load
+    bundleIds.forEach(bundleId => {
+      const callbacks = bundleCallbacks[bundleId];
+      if (callbacks) {
+        for (var i = 0; i < callbacks.length; i++) {
+          try {
+            callbacks[i]();
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        bundleCallbacks[bundleId] = null;
+      }
+
+      // remember that we've already loaded this bundle
+      loadedBundles[bundleId] = true;
+    });
+  };
 
 
   let customStyle: CustomStyle;
@@ -240,11 +216,7 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
 
 
   function loadBundle(cmpMeta: ComponentMeta, modeName: string, cb: Function, bundleId?: string) {
-    if (Build.es5) {
-      bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[1];
-    } else {
-      bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[0];
-    }
+    bundleId = (cmpMeta.bundleIds[modeName] || (cmpMeta.bundleIds as any))[1];
 
     if (loadedBundles[bundleId]) {
       // sweet, we've already loaded this bundle
@@ -320,12 +292,4 @@ export function createPlatformClientEs5(Context: CoreContext, App: AppGlobal, wi
   }
 
   return plt;
-}
-
-
-export interface StyleTemplates {
-  [tag: string]: {
-    id: string;
-    content: any;
-  };
 }
