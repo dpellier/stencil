@@ -247,6 +247,7 @@ export interface Bundle {
 
 
 export interface ManifestBundle {
+  cacheKey?: string;
   moduleFiles: ModuleFile[];
   compiledModeStyles?: CompiledModeStyles[];
   compiledModuleText?: string;
@@ -493,8 +494,13 @@ export interface BuildResults {
   changedFiles?: string[];
 }
 
+export interface GraphData {
+  [key: string]: string[];
+}
+
 
 export interface BuildContext {
+  graphData?: GraphData;
   moduleFiles?: ModuleFiles;
   manifestBundles?: ManifestBundle[];
   jsFiles?: FilesMap;
@@ -1229,7 +1235,10 @@ export interface StencilSystem {
   remove?(path: string): Promise<void>;
   rollup?: {
     rollup: {
-      (config: { input: string; plugins?: any[]; treeshake?: boolean; onwarn?: Function; }): Promise<{
+      (config: { entry?: any, input?: string; external?: Function; plugins?: any[]; treeshake?: boolean; onwarn?: Function; }): Promise<{
+        imports: any,
+        exports: any,
+        modules: any,
         generate: {(config: {
           format?: string;
           banner?: string;
