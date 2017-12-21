@@ -2,6 +2,7 @@ import { convertValueToLiteral, getImportNameMapFromStyleMeta, styleImport } fro
 import { ComponentMeta, ModuleFiles } from '../../../util/interfaces';
 import { formatComponentConstructorProperties } from '../../../util/data-serialize';
 import * as ts from 'typescript';
+import { ENCAPSULATION } from '../../../util/constants';
 
 
 /**
@@ -24,23 +25,38 @@ export default function addComponentMetadata(moduleFiles: ModuleFiles): ts.Trans
         return classNode;
       }
 
-      const constructorMeta = formatComponentConstructorProperties(cmpMeta.membersMeta);
-      const styleMeta = Object.keys(cmpMeta.stylesMeta)
+      const propertiesMeta = formatComponentConstructorProperties(cmpMeta.membersMeta);
+      const stylesMeta = Object.keys(cmpMeta.stylesMeta)
         .reduce((all, smn) => {
           return all.concat(getImportNameMapFromStyleMeta(cmpMeta.stylesMeta[smn]));
         }, [] as styleImport[])
         .map(obj => obj.importName);
 
-      const newMembers = [
+      // if no value then skip it
+      let newMembers = [
         createGetter('is', convertValueToLiteral(cmpMeta.tagNameMeta)),
-        createGetter('encapsulation', convertValueToLiteral(cmpMeta.encapsulation)),
-        createGetter('host', convertValueToLiteral(cmpMeta.hostMeta)),
-        createGetter('events', convertValueToLiteral(cmpMeta.eventsMeta)),
-        createGetter('properties', convertValueToLiteral(constructorMeta)),
-        createGetter('style', ts.createArrayLiteral(
-          styleMeta.map(sm => ts.createIdentifier(sm))
-        ))
       ];
+
+      if (cmpMeta.encapsulation === ENCAPSULATION.ShadowDom) {
+        newMembers.push(createGetter('encapsulation', convertValueToLiteral('shadow')));
+      } else if (cmpMeta.encapsulation === ENCAPSULATION.ScopedCss) {
+        newMembers.push(createGetter('encapsulation', convertValueToLiteral('scoped')));
+      }
+
+      if (Object.keys(cmpMeta.hostMeta).length > 0) {
+        newMembers.push(createGetter('host', convertValueToLiteral(cmpMeta.hostMeta)));
+      }
+      if (Object.keys(propertiesMeta).length > 0) {
+        newMembers.push(createGetter('properties', convertValueToLiteral(propertiesMeta)));
+      }
+      if (cmpMeta.eventsMeta.length > 0) {
+        newMembers.push(createGetter('events', convertValueToLiteral(cmpMeta.eventsMeta)));
+      }
+      if (stylesMeta.length > 0) {
+        newMembers.push(createGetter('style', ts.createArrayLiteral(
+          stylesMeta.map(sm => ts.createIdentifier(sm))
+        )));
+      }
 
       return ts.updateClassDeclaration(
         classNode,
