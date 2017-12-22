@@ -60,6 +60,7 @@
     "node-fetch": "^1.7.2",
     "read-pkg-up": "^2.0.0",
     "rimraf": "^2.6.2",
+    "rollup-plugin-scss": "^0.4.0",
     "semver": "^5.4.1",
     "tar": "^4.0.2",
     "ts-jest": "^21.1.3",

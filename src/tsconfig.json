@@ -24,6 +24,7 @@
   },
   "include": [
     "index.ts",
+    "types/rollup-plugin-scss.d.ts",
     "client/*.ts"
   ]
 }
