@@ -17,7 +17,7 @@ export function getMethodDecoratorMeta(checker: ts.TypeChecker, classNode: ts.Cl
       if (elementDecorator) {
         membersMeta[member.name.getText()] = {
           memberType: MEMBER_TYPE.Method,
-          jsDocumentation: serializeSymbol(checker, symbol)
+          jsdoc: serializeSymbol(checker, symbol)
         };
       }
 

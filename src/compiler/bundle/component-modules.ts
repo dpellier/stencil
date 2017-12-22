@@ -53,10 +53,12 @@ async function bundleComponents(config: BuildConfig, ctx: BuildContext, manifest
           include: 'node_modules/**',
           sourceMap: false
         }),
+        scss({
+          output: false
+        }),
         stencilManifestsToInputs(manifestBundle),
         transpiledInMemoryPlugin(config, ctx),
         localResolution(config),
-        scss()
       ],
       onwarn: createOnWarnFn(ctx.diagnostics, manifestBundle.moduleFiles)
 

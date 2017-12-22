@@ -43,7 +43,7 @@ class Row {
     content.push(`#### ${this.eventMeta.eventName}`);
     content.push(``);
 
-    const doc = getMemberDocumentation(this.eventMeta.jsDocumentation);
+    const doc = getMemberDocumentation(this.eventMeta.jsdoc);
     if (doc) {
       content.push(doc);
       content.push(``);

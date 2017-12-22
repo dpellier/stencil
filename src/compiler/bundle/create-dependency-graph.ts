@@ -4,6 +4,7 @@ import transpiledInMemoryPlugin from './rollup-plugins/transpile-in-memory';
 import stencilManifestsToInputs from './rollup-plugins/stencil-manifest-to-imports';
 import { BuildConfig, BuildContext, ManifestBundle } from '../../util/interfaces';
 import { createOnWarnFn, loadRollupDiagnostics } from '../../util/logger/logger-rollup';
+import scss from './rollup-plugins/scss';
 
 export async function createDependencyGraph(config: BuildConfig, ctx: BuildContext, manifestBundle: ManifestBundle) {
   // start the bundler on our temporary file
@@ -21,6 +22,9 @@ export async function createDependencyGraph(config: BuildConfig, ctx: BuildConte
           include: 'node_modules/**',
           sourceMap: false
         }),
+        scss({
+          output: false
+        }),
         stencilManifestsToInputs(manifestBundle),
         transpiledInMemoryPlugin(config, ctx),
       ],
@@ -28,6 +32,7 @@ export async function createDependencyGraph(config: BuildConfig, ctx: BuildConte
 
     });
   } catch (err) {
+    console.error(err);
     loadRollupDiagnostics(config, ctx.diagnostics, err);
   }
 

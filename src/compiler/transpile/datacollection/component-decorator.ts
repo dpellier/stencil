@@ -11,7 +11,7 @@ export function getComponentDecoratorMeta (checker: ts.TypeChecker, node: ts.Cla
     return undefined;
   }
 
-  cmpMeta.jsDocumentation = serializeSymbol(checker, symbol);
+  cmpMeta.jsdoc = serializeSymbol(checker, symbol);
 
   const componentDecorator = node.decorators.find(isDecoratorNamed('Component'));
   if (!componentDecorator) {

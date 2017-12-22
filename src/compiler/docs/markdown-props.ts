@@ -46,7 +46,7 @@ class Row {
     content.push(getPropType(this.memberMeta.propType));
     content.push(``);
 
-    const doc = getMemberDocumentation(this.memberMeta.jsDocumentation);
+    const doc = getMemberDocumentation(this.memberMeta.jsdoc);
     if (doc) {
       content.push(doc);
       content.push(``);

@@ -196,15 +196,15 @@ export function createImportNameFromUrl(importUrl: string) {
 
 export interface StyleImport {
   importName: string;
-  relativePath: string;
+  absolutePath: string;
 }
 
 export function getImportNameMapFromStyleMeta(styleMeta: StyleMeta): StyleImport[] {
-  return styleMeta.originalComponentPaths.map((ocp) => {
+  return styleMeta.absolutePaths.map((ocp) => {
     const importName = createImportNameFromUrl(ocp) + 'Css';
     return {
       importName,
-      relativePath: './' + ocp
+      absolutePath: ocp,
     };
   });
 }

@@ -687,7 +687,7 @@ export interface MemberMeta {
   attribName?: string;
   attribType?: AttributeTypeInfo;
   ctrlId?: string;
-  jsDocumentation?: JSDoc;
+  jsdoc?: JSDoc;
 }
 
 
@@ -774,7 +774,7 @@ export interface EventMeta {
   eventBubbles?: boolean;
   eventCancelable?: boolean;
   eventComposed?: boolean;
-  jsDocumentation?: JSDoc;
+  jsdoc?: JSDoc;
 }
 
 
@@ -797,7 +797,7 @@ export interface ListenMeta {
   eventCapture?: boolean;
   eventPassive?: boolean;
   eventDisabled?: boolean;
-  jsDocumentation?: JSDoc;
+  jsdoc?: JSDoc;
 }
 
 
@@ -831,7 +831,7 @@ export interface ComponentMeta {
   assetsDirsMeta?: AssetsMeta[];
   componentConstructor?: ComponentConstructor;
   componentClass?: string;
-  jsDocumentation?: JSDoc;
+  jsdoc?: JSDoc;
 }
 
 

@@ -28,7 +28,7 @@ export default function addAssetImports(moduleFiles: ModuleFiles): ts.Transforme
               undefined,
               undefined,
               ts.createImportClause(ts.createIdentifier(ocp.importName), undefined),
-              ts.createLiteral(ocp.relativePath)
+              ts.createLiteral(ocp.absolutePath)
             );
           }));
         }, [] as ts.ImportDeclaration[]);
