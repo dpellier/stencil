@@ -4,7 +4,7 @@ import { buildExpressionReplacer } from '../build/replacer';
 import localResolution from './rollup-plugins/local-resolution';
 import transpiledInMemoryPlugin from './rollup-plugins/transpile-in-memory';
 import stencilManifestsToInputs from './rollup-plugins/stencil-manifest-to-imports';
-import scss from 'rollup-plugin-scss';
+import scss from './rollup-plugins/scss';
 import { createOnWarnFn, loadRollupDiagnostics } from '../../util/logger/logger-rollup';
 
 
