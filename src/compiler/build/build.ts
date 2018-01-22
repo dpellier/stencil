@@ -7,6 +7,7 @@ import { getBuildContext } from './build-utils';
 import { generateAppFiles } from '../app/generate-app-files';
 import { generateAppManifest } from '../manifest/generate-manifest';
 import { generateBundles } from '../bundle/generate-bundles';
+import { generateComponentGraph } from '../bundle/component-graph';
 import { generateIndexHtml } from '../html/generate-index-html';
 import { generateReadmes } from '../docs/generate-readmes';
 import { generateStyles } from '../style/style';
@@ -43,6 +44,10 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     // generation the app manifest from the compiled module file results
     // and from all the dependent collections
     await generateAppManifest(config, compilerCtx, buildCtx);
+    if (buildCtx.shouldAbort()) return buildCtx.finish();
+
+    // figure out how all these components are connected
+    await generateComponentGraph(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // bundle modules and styles into separate files phase

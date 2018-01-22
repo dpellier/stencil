@@ -62,12 +62,8 @@ export interface ComponentMeta {
   assetsDirsMeta?: AssetsMeta[];
   componentConstructor?: ComponentConstructor;
   componentClass?: string;
+  componentGraph?: ComponentGraph;
   jsdoc?: JSDoc;
-}
-
-
-export interface ModeStyles {
-  [modeName: string]: string | string[];
 }
 
 
@@ -175,6 +171,9 @@ export interface JSDoc {
   documentation: string;
   type: string;
 }
+
+
+export type ComponentGraph = string[];
 
 
 export interface ComponentInstance {
