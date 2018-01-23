@@ -1,5 +1,5 @@
 import { bundledComponentContainsChangedFile, } from '../bundle-module';
-import { Bundle, Config, CompilerCtx, Diagnostic, ModuleFile } from '../../../util/interfaces';
+import { Bundle, Config, Diagnostic, ModuleFile } from '../../../declarations';
 import { expectFilesWritten } from '../../../testing/utils';
 import { mockStencilSystem } from '../../../testing/mocks';
 import { TestingCompiler } from '../../../testing/index';
