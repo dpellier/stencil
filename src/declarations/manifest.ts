@@ -39,6 +39,9 @@ export interface AppRegistryComponents {
 }
 
 
+export type EntryModule = ModuleFile[];
+
+
 export interface Bundle {
   entryKey?: string;
   moduleFiles: d.ModuleFile[];

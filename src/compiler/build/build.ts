@@ -7,7 +7,7 @@ import { getBuildContext } from './build-utils';
 import { generateAppFiles } from '../app/generate-app-files';
 import { generateAppManifest } from '../manifest/generate-manifest';
 import { generateBundles } from '../bundle/generate-bundles';
-// import { generateComponentBundles } from '../bundle/component-bundles';
+import { generateEntryModules } from '../entries/entry-modules';
 import { generateIndexHtml } from '../html/generate-index-html';
 import { generateReadmes } from '../docs/generate-readmes';
 import { generateStyles } from '../style/style';
@@ -46,9 +46,9 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     await generateAppManifest(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
-    // figure out how all these components are connected
-    // await generateComponentBundles(config, compilerCtx, buildCtx);
-    // if (buildCtx.shouldAbort()) return buildCtx.finish();
+    // figure out how all these components should be connected
+    await generateEntryModules(config, compilerCtx, buildCtx);
+    if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // bundle modules and styles into separate files phase
     const bundles = await bundleModules(config, compilerCtx, buildCtx);
