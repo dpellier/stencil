@@ -1,5 +1,4 @@
-import { Config, ManifestBundle } from '../../util/interfaces';
-import { validateComponentTag } from './validate-component';
+import { Config } from '../../declarations';
 import { validateCopy } from './validate-copy';
 import { validateDependentCollection } from './validate-collection';
 import { validateNamespace } from './validate-namespace';
@@ -147,14 +146,12 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
     config.excludeSrc = DEFAULT_EXCLUDES.slice();
   }
 
-  config.collections = config.collections || [];
+  config.collections = Array.isArray(config.collections) ? config.collections : [];
   config.collections = config.collections.map(validateDependentCollection);
 
-  config.plugins = config.plugins || [];
+  config.plugins = Array.isArray(config.plugins) ? config.plugins : [];
 
-  config.bundles = config.bundles || [];
-
-  validateUserBundles(config.bundles);
+  config.bundles = Array.isArray(config.bundles) ? config.bundles : [];
 
   // set to true so it doesn't bother going through all this again on rebuilds
   config._isValidated = true;
@@ -171,37 +168,6 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
 
 export function setProcessEnvironment(config: Config) {
   process.env.NODE_ENV = config.devMode ? 'development' : 'production';
-}
-
-
-export function validateUserBundles(manifestBundles: ManifestBundle[]) {
-  if (!manifestBundles) {
-    throw new Error(`Invalid bundles`);
-  }
-
-  // normalize bundle component tags
-  // sort by tag name and ensure they're lower case
-  manifestBundles.forEach(b => {
-    if (!Array.isArray(b.components)) {
-      throw new Error(`manifest missing bundle components array, instead received: ${b.components}`);
-    }
-
-    b.components = b.components.filter(c => typeof c === 'string' && c.trim().length);
-
-    if (!b.components.length) {
-      throw new Error(`No valid bundle components found within stencil config`);
-    }
-
-    b.components = b.components.map(tag => validateComponentTag(tag)).sort();
-  });
-
-  manifestBundles = manifestBundles.sort((a, b) => {
-    if (a.components && a.components.length && b.components && b.components.length) {
-      if (a.components[0].toLowerCase() < b.components[0].toLowerCase()) return -1;
-      if (a.components[0].toLowerCase() > b.components[0].toLowerCase()) return 1;
-    }
-    return 0;
-  });
 }
 
 

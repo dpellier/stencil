@@ -6,11 +6,11 @@ export interface BuildCtx {
   requiresFullBuild: boolean;
   diagnostics: d.Diagnostic[];
   manifest: d.Manifest;
+  entryModules: d.EntryModule[];
   transpileBuildCount: number;
   bundleBuildCount: number;
   appFileBuildCount: number;
   indexBuildCount: number;
-  components: string[];
   aborted: boolean;
   timeSpan: d.LoggerTimeSpan;
   startTime: number;

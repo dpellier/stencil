@@ -1,15 +1,15 @@
 import { addStaticMeta } from '../add-component-metadata';
-import { Bundle, ComponentMeta } from '../../../../util/interfaces';
+import { ComponentMeta, EntryModule } from '../../../../declarations';
 import { normalizePath } from '../../../util';
 import * as ts from 'typescript';
 
 
-export default function upgradeFromMetadata(bundles: Bundle[]) {
+export default function upgradeFromMetadata(entryModules: EntryModule[]) {
 
   return (tsSourceFile: ts.SourceFile) => {
     const tsFilePath = normalizePath(tsSourceFile.fileName);
 
-    const bundle = bundles.find(m => {
+    const bundle = entryModules.find(m => {
       return m.moduleFiles.some(m => m.cmpMeta && normalizePath(m.jsFilePath) === tsFilePath);
     });
 

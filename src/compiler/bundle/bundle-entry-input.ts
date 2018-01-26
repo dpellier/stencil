@@ -1,11 +1,11 @@
-import { Bundle, ModuleFile } from '../../util/interfaces';
+import { EntryModule, ModuleFile } from '../../declarations';
 import { dashToPascalCase } from '../../util/helpers';
 import { normalizePath } from '../util';
 
 
-export function generateBundleEntryInput(bundle: Bundle) {
+export function generateBundleEntryInput(entryModule: EntryModule) {
   // create a PascalCased named export for each component within the button
-  const lines = bundle.moduleFiles.map(m => componentExport(m));
+  const lines = entryModule.moduleFiles.map(m => componentExport(m));
 
   // return a string representing the entry input file for this bundle
   return lines.join('\n');

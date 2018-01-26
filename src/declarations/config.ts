@@ -6,7 +6,7 @@ export interface Config {
   buildDir?: string;
   buildEs5?: boolean;
   buildStats?: boolean;
-  bundles?: d.ManifestBundle[];
+  bundles?: ConfigBundle[];
   collectionDir?: string;
   collections?: DependentCollection[];
   configPath?: string;
@@ -31,6 +31,8 @@ export interface Config {
   logLevel?: 'error'|'warn'|'info'|'debug'|string;
   minifyCss?: boolean;
   minifyJs?: boolean;
+  maxComponentsPerBundle?: number;
+  minComponentsPerBundle?: number;
   namespace?: string;
   plugins?: d.Plugin[];
   preamble?: string;
@@ -51,6 +53,11 @@ export interface Config {
 
   _isValidated?: boolean;
   _isTesting?: boolean;
+}
+
+
+export interface ConfigBundle {
+  components: string[];
 }
 
 

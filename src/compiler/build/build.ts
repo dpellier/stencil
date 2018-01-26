@@ -5,15 +5,15 @@ import { copyTasks } from '../copy/copy-tasks';
 import { emptyDestDir, writeBuildFiles } from './write-build';
 import { getBuildContext } from './build-utils';
 import { generateAppFiles } from '../app/generate-app-files';
-import { generateAppManifest } from '../manifest/generate-manifest';
 import { generateBundles } from '../bundle/generate-bundles';
 import { generateEntryModules } from '../entries/entry-modules';
 import { generateIndexHtml } from '../html/generate-index-html';
 import { generateReadmes } from '../docs/generate-readmes';
 import { generateStyles } from '../style/style';
 import { initIndexHtml } from '../html/init-index-html';
+import { loadCollectionModules } from '../manifest/load-collections';
 import { prerenderApp } from '../prerender/prerender-app';
-import { transpileScanSrc } from '../transpile/transpile-scan-src';
+import { transpileAppModules } from '../transpile/transpile-app-modules';
 
 
 export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?: WatcherResults): Promise<BuildResults> {
@@ -38,20 +38,21 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     // begin the build
     // async scan the src directory for ts files
     // then transpile them all in one go
-    await transpileScanSrc(config, compilerCtx, buildCtx);
+    await transpileAppModules(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // generation the app manifest from the compiled module file results
     // and from all the dependent collections
-    await generateAppManifest(config, compilerCtx, buildCtx);
+    await loadCollectionModules(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
+    // we've got the compiler context filled with app modules and collection dependency modules
     // figure out how all these components should be connected
-    await generateEntryModules(config, compilerCtx, buildCtx);
+    const entries = await generateEntryModules(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // bundle modules and styles into separate files phase
-    const bundles = await bundleModules(config, compilerCtx, buildCtx);
+    const bundles = await bundleModules(config, compilerCtx, buildCtx, entries);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // create each of the components's styles

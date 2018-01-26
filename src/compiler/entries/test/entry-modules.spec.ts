@@ -1,8 +1,280 @@
-import { getAppComponentEntries, getEntryGraph, getUserConfigBundles, prioritizedEntries } from '../entry-modules';
-import { ManifestBundle, ModuleFile } from '../../../declarations';
+import { ConfigBundle, EntryModule, ModuleFile } from '../../../declarations';
+import { entryRequiresScopedStyles, getAppEntryTags, getEntryEncapsulations, getEntryModes,
+  getUserConfigEntryTags, prioritizeEntryTags, regroupEntryModules } from '../entry-modules';
+import { ENCAPSULATION } from '../../../util/constants';
 
 
 describe('graph-dependencies', () => {
+
+  const allModules: ModuleFile[] = [
+    { cmpMeta: { tagNameMeta: 'cmp-a' } },
+    { cmpMeta: { tagNameMeta: 'cmp-b' } },
+    { cmpMeta: { tagNameMeta: 'cmp-c' } },
+    { cmpMeta: { tagNameMeta: 'cmp-d' } },
+    { cmpMeta: { tagNameMeta: 'cmp-e' } }
+  ];
+
+  describe('bundleRequiresScopedStyles', () => {
+
+    it('scoped if using shadow', () => {
+      const requiresScopedCss = entryRequiresScopedStyles([
+        ENCAPSULATION.ShadowDom
+      ]);
+      expect(requiresScopedCss).toBe(true);
+    });
+
+    it('scoped if using scoped', () => {
+      const requiresScopedCss = entryRequiresScopedStyles([
+        ENCAPSULATION.ScopedCss
+      ]);
+      expect(requiresScopedCss).toBe(true);
+    });
+
+    it('no scoped if only using no encapsulation', () => {
+      const requiresScopedCss = entryRequiresScopedStyles([
+        ENCAPSULATION.NoEncapsulation, ENCAPSULATION.NoEncapsulation
+      ]);
+      expect(requiresScopedCss).toBe(false);
+    });
+
+    it('no scoped if empty', () => {
+      const requiresScopedCss = entryRequiresScopedStyles([]);
+      expect(requiresScopedCss).toBe(false);
+    });
+
+  });
+
+  describe('getBundleEncapsulations', () => {
+
+    it('should add scoped when using shadow', () => {
+      const entryModule: EntryModule = {
+        moduleFiles: [
+          { cmpMeta: { encapsulation: ENCAPSULATION.ShadowDom } },
+        ]
+      };
+      const modes = getEntryEncapsulations(entryModule);
+      expect(modes.length).toBe(2);
+      expect(modes[0]).toBe(ENCAPSULATION.ShadowDom);
+      expect(modes[1]).toBe(ENCAPSULATION.ScopedCss);
+    });
+
+    it('get all encapsulations', () => {
+      const entryModule: EntryModule = {
+        moduleFiles: [
+          { cmpMeta: { encapsulation: ENCAPSULATION.NoEncapsulation } },
+          { cmpMeta: { encapsulation: ENCAPSULATION.ScopedCss } },
+          { cmpMeta: { encapsulation: ENCAPSULATION.ScopedCss } },
+          { cmpMeta: { encapsulation: ENCAPSULATION.ShadowDom } },
+        ]
+      };
+      const modes = getEntryEncapsulations(entryModule);
+      expect(modes.length).toBe(3);
+      expect(modes[0]).toBe(ENCAPSULATION.NoEncapsulation);
+      expect(modes[1]).toBe(ENCAPSULATION.ShadowDom);
+      expect(modes[2]).toBe(ENCAPSULATION.ScopedCss);
+    });
+
+    it('get no encapsulation', () => {
+      const entryModule: EntryModule = {
+        moduleFiles: [
+          { cmpMeta: { } },
+        ]
+      };
+      const modes = getEntryEncapsulations(entryModule);
+      expect(modes.length).toBe(1);
+      expect(modes[0]).toBe(ENCAPSULATION.NoEncapsulation);
+    });
+
+  });
+
+  describe('getBundleModes', () => {
+
+    it('get specific modes and not default mode when theres a mix', () => {
+      const moduleFiles: ModuleFile[] = [
+        { cmpMeta: { stylesMeta: { $: {} } } },
+        { cmpMeta: { stylesMeta: { $: {} } } },
+        { cmpMeta: { stylesMeta: { modeA: {}, modeB: {} } } },
+        { cmpMeta: { stylesMeta: { modeB: {} } } },
+        { cmpMeta: { stylesMeta: { modeA: {} } } },
+      ];
+      const modes = getEntryModes(moduleFiles);
+      expect(modes.length).toBe(2);
+      expect(modes[0]).toBe('modeA');
+      expect(modes[1]).toBe('modeB');
+    });
+
+    it('get modes only', () => {
+      const moduleFiles: ModuleFile[] = [
+        { cmpMeta: { stylesMeta: { modeA: {}, modeB: {} } } },
+        { cmpMeta: { stylesMeta: { modeA: {}, modeB: {} } } },
+      ];
+      const modes = getEntryModes(moduleFiles);
+      expect(modes.length).toBe(2);
+      expect(modes[0]).toBe('modeA');
+      expect(modes[1]).toBe('modeB');
+    });
+
+    it('get default only', () => {
+      const moduleFiles: ModuleFile[] = [
+        { cmpMeta: { stylesMeta: { $: {} } } },
+      ];
+      const modes = getEntryModes(moduleFiles);
+      expect(modes.length).toBe(1);
+      expect(modes[0]).toBe('$');
+    });
+
+    it('get default if no modes found', () => {
+      const moduleFiles: ModuleFile[] = [
+        { cmpMeta: {} },
+      ];
+      const modes = getEntryModes(moduleFiles);
+      expect(modes.length).toBe(1);
+      expect(modes[0]).toBe('$');
+    });
+
+    it('get modes without dups', () => {
+      const moduleFiles: ModuleFile[] = [
+        { cmpMeta: { stylesMeta: { modeB: {} } } },
+        { cmpMeta: { stylesMeta: { modeA: {} } } },
+        { cmpMeta: { stylesMeta: { modeA: {}, modeB: {} } } }
+      ];
+      const modes = getEntryModes(moduleFiles);
+      expect(modes.length).toBe(2);
+      expect(modes[0]).toBe('modeA');
+      expect(modes[1]).toBe('modeB');
+    });
+
+  });
+
+  describe('regroupEntryModules', () => {
+
+    it('should prefer ShadowDom', () => {
+      const allModules: ModuleFile[] = [
+        { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.NoEncapsulation } },
+        { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.ScopedCss } },
+        { cmpMeta: { tagNameMeta: 'cmp-c', encapsulation: ENCAPSULATION.ShadowDom } },
+        { cmpMeta: { tagNameMeta: 'cmp-d', encapsulation: ENCAPSULATION.ShadowDom } },
+      ];
+
+      const entryModulesTags = [
+        ['cmp-a', 'cmp-b', 'cmp-c', 'cmp-d']
+      ];
+
+      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      expect(entryModules).toHaveLength(3);
+      expect(entryModules[0]).toHaveLength(1);
+      expect(entryModules[0][0].cmpMeta.tagNameMeta).toBe('cmp-a');
+      expect(entryModules[1]).toHaveLength(1);
+      expect(entryModules[1][0].cmpMeta.tagNameMeta).toBe('cmp-b');
+      expect(entryModules[2]).toHaveLength(2);
+      expect(entryModules[2][0].cmpMeta.tagNameMeta).toBe('cmp-c');
+      expect(entryModules[2][1].cmpMeta.tagNameMeta).toBe('cmp-d');
+    });
+
+    it('should prefer ScopedCss', () => {
+      const allModules: ModuleFile[] = [
+        { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.NoEncapsulation } },
+        { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.ScopedCss } },
+        { cmpMeta: { tagNameMeta: 'cmp-c', encapsulation: ENCAPSULATION.ScopedCss } },
+        { cmpMeta: { tagNameMeta: 'cmp-d', encapsulation: ENCAPSULATION.ShadowDom } },
+      ];
+
+      const entryModulesTags = [
+        ['cmp-a', 'cmp-b', 'cmp-c', 'cmp-d']
+      ];
+
+      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      expect(entryModules).toHaveLength(3);
+      expect(entryModules[0]).toHaveLength(1);
+      expect(entryModules[0][0].cmpMeta.tagNameMeta).toBe('cmp-a');
+      expect(entryModules[2]).toHaveLength(1);
+      expect(entryModules[1][0].cmpMeta.tagNameMeta).toBe('cmp-b');
+      expect(entryModules[1][1].cmpMeta.tagNameMeta).toBe('cmp-c');
+      expect(entryModules[2]).toHaveLength(1);
+      expect(entryModules[2][0].cmpMeta.tagNameMeta).toBe('cmp-d');
+    });
+
+    it('should prefer NoEncapsulation', () => {
+      const allModules: ModuleFile[] = [
+        { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.NoEncapsulation } },
+        { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.NoEncapsulation } },
+        { cmpMeta: { tagNameMeta: 'cmp-c', encapsulation: ENCAPSULATION.ScopedCss } },
+        { cmpMeta: { tagNameMeta: 'cmp-d', encapsulation: ENCAPSULATION.ShadowDom } },
+      ];
+
+      const entryModulesTags = [
+        ['cmp-a', 'cmp-b', 'cmp-c', 'cmp-d']
+      ];
+
+      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      expect(entryModules).toHaveLength(3);
+      expect(entryModules[0]).toHaveLength(2);
+      expect(entryModules[0][0].cmpMeta.tagNameMeta).toBe('cmp-a');
+      expect(entryModules[0][1].cmpMeta.tagNameMeta).toBe('cmp-b');
+      expect(entryModules[1]).toHaveLength(1);
+      expect(entryModules[1][0].cmpMeta.tagNameMeta).toBe('cmp-c');
+      expect(entryModules[2]).toHaveLength(1);
+      expect(entryModules[2][0].cmpMeta.tagNameMeta).toBe('cmp-d');
+    });
+
+    it('should evenly split when all the same', () => {
+      const allModules: ModuleFile[] = [
+        { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.NoEncapsulation } },
+        { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.ScopedCss } },
+        { cmpMeta: { tagNameMeta: 'cmp-c', encapsulation: ENCAPSULATION.ShadowDom } },
+      ];
+
+      const entryModulesTags = [
+        ['cmp-a', 'cmp-b', 'cmp-c']
+      ];
+
+      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      expect(entryModules).toHaveLength(3);
+      expect(entryModules[0]).toHaveLength(1);
+      expect(entryModules[1]).toHaveLength(1);
+      expect(entryModules[2]).toHaveLength(1);
+    });
+
+    it('should add only ShadowDom', () => {
+      const allModules: ModuleFile[] = [
+        { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.ShadowDom } },
+        { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.ShadowDom } },
+      ];
+      const entryModulesTags = [
+        ['cmp-a', 'cmp-b']
+      ];
+      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      expect(entryModules).toHaveLength(1);
+      expect(entryModules[0]).toHaveLength(2);
+    });
+
+    it('should add only ScopedCss', () => {
+      const allModules: ModuleFile[] = [
+        { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.ScopedCss } },
+        { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.ScopedCss } },
+      ];
+      const entryModulesTags = [
+        ['cmp-a', 'cmp-b']
+      ];
+      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      expect(entryModules).toHaveLength(1);
+      expect(entryModules[0]).toHaveLength(2);
+    });
+
+    it('should add only NoEncapsulation', () => {
+      const allModules: ModuleFile[] = [
+        { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.NoEncapsulation } },
+        { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.NoEncapsulation } },
+      ];
+      const entryModulesTags = [
+        ['cmp-a', 'cmp-b']
+      ];
+      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      expect(entryModules).toHaveLength(1);
+      expect(entryModules[0]).toHaveLength(2);
+    });
+
+  });
 
   describe('prioritizedEntries', () => {
 
@@ -13,7 +285,7 @@ describe('graph-dependencies', () => {
         ['b', 'c'],
         ['c', 'c', 'c', 'c']
       ];
-      const prioritized = prioritizedEntries(entries);
+      const prioritized = prioritizeEntryTags(entries);
       expect(prioritized).toHaveLength(1);
       expect(prioritized[0]).toHaveLength(3);
     });
@@ -23,7 +295,7 @@ describe('graph-dependencies', () => {
         ['a', 'b', 'c'],
         ['a', 'b', 'd']
       ];
-      const prioritized = prioritizedEntries(entries);
+      const prioritized = prioritizeEntryTags(entries);
       expect(prioritized).toHaveLength(2);
       expect(prioritized[0]).toHaveLength(3);
       expect(prioritized[1]).toHaveLength(1);
@@ -31,7 +303,7 @@ describe('graph-dependencies', () => {
 
   });
 
-  describe('getAppComponentEntries', () => {
+  describe('getAppEntryTags', () => {
 
     it('not get collection deps', () => {
       const allModules: ModuleFile[] = [
@@ -41,91 +313,65 @@ describe('graph-dependencies', () => {
         { cmpMeta: { tagNameMeta: 'collection-b' }, isCollectionDependency: true },
       ];
 
-      const entries = getAppComponentEntries(allModules);
+      const entries = getAppEntryTags(allModules);
       expect(entries).toHaveLength(2);
-      expect(entries[0][0]).toBe('cmp-a');
-      expect(entries[1][0]).toBe('cmp-b');
-    });
-
-  });
-
-  describe('getEntryGraph', () => {
-
-    it('circular', () => {
-      const tag = 'cmp-a';
-      const tags = getEntryGraph([
-        { cmpMeta: { tagNameMeta: 'cmp-a', componentGraph: ['cmp-b'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-b', componentGraph: ['cmp-a', 'cmp-c'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-c', componentGraph: ['cmp-d'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-d', componentGraph: ['cmp-a', 'cmp-b', 'cmp-c'] } }
-      ], tag);
-      expect(tags).toHaveLength(4);
-    });
-
-    it('no dups', () => {
-      const tag = 'cmp-a';
-      const tags = getEntryGraph([
-        { cmpMeta: { tagNameMeta: 'cmp-a', componentGraph: ['cmp-b', 'cmp-c', 'cmp-d'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-b', componentGraph: ['cmp-c'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-c', componentGraph: ['cmp-d'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-d' } }
-      ], tag);
-      expect(tags).toHaveLength(4);
-    });
-
-    it('simple graph', () => {
-      const tag = 'cmp-a';
-      const tags = getEntryGraph([
-        { cmpMeta: { tagNameMeta: 'cmp-a', componentGraph: ['cmp-b'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-b', componentGraph: ['cmp-c'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-c', componentGraph: ['cmp-d'] } },
-        { cmpMeta: { tagNameMeta: 'cmp-d' } }
-      ], tag);
-      expect(tags).toHaveLength(4);
-    });
-
-    it('no sub graph', () => {
-      const tag = 'cmp-a';
-      const tags = getEntryGraph([
-        { cmpMeta: { tagNameMeta: 'cmp-a' } }
-      ], tag);
-      expect(tags).toHaveLength(1);
+      expect(entries[0]).toBe('cmp-a');
+      expect(entries[1]).toBe('cmp-b');
     });
 
   });
 
   describe('getUserConfigBundles', () => {
 
+    it('throw for invalid component not found', () => {
+      expect(() => {
+        const bundles: ConfigBundle[] = [
+          { components: ['cmp-xyz'] }
+        ];
+        const entries = getUserConfigEntryTags(bundles, allModules);
+      }).toThrow();
+    });
+
+    it('throw for invalid component tag', () => {
+      expect(() => {
+        const bundles: ConfigBundle[] = [
+          { components: ['cmpxyz'] }
+        ];
+        const entries = getUserConfigEntryTags(bundles, allModules);
+      }).toThrow();
+    });
+
     it('sort with most first', () => {
-      const bundles: ManifestBundle[] = [
+      const bundles: ConfigBundle[] = [
         { components: ['cmp-a', 'cmp-b'] },
         { components: ['cmp-c', 'cmp-d', 'cmp-e'] }
       ];
-      const entries = getUserConfigBundles(bundles);
+      const entries = getUserConfigEntryTags(bundles, allModules);
       expect(entries).toHaveLength(2);
       expect(entries[0]).toHaveLength(3);
       expect(entries[1]).toHaveLength(2);
     });
 
     it('add components', () => {
-      const bundles: ManifestBundle[] = [
+
+      const bundles: ConfigBundle[] = [
         { components: ['cmp-a', 'cmp-b'] },
         { components: ['cmp-c', 'cmp-d'] }
       ];
-      const entries = getUserConfigBundles(bundles);
+      const entries = getUserConfigEntryTags(bundles, allModules);
       expect(entries).toHaveLength(2);
       expect(entries[0]).toHaveLength(2);
       expect(entries[1]).toHaveLength(2);
     });
 
     it('no components', () => {
-      const bundles: ManifestBundle[] = [];
-      const entries = getUserConfigBundles(bundles);
+      const bundles: ConfigBundle[] = [];
+      const entries = getUserConfigEntryTags(bundles, []);
       expect(entries).toHaveLength(0);
     });
 
     it('no bundles', () => {
-      const entries = getUserConfigBundles(null);
+      const entries = getUserConfigEntryTags(null, []);
       expect(entries).toHaveLength(0);
     });
 

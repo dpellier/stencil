@@ -38,6 +38,8 @@ async function loadDependentManifest(config: Config, compilerCtx: CompilerCtx, d
     config.sys.path.join(dependentPackageRootDir, packageData.collection)
   );
 
+  config.logger.debug(`load colleciton: ${dependentManifestFilePath}`);
+
   // we haven't cached the dependent manifest yet, let's read this file
   const dependentManifestJson = await compilerCtx.fs.readFile(dependentManifestFilePath);
 

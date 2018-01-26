@@ -1,4 +1,4 @@
-import { BuildCtx, Bundle, CompilerCtx, Config, Manifest } from '../../util/interfaces';
+import { BuildCtx, CompilerCtx, Config, EntryModule, Manifest } from '../../declarations';
 import { CompilerUpgrade, validateManifestCompatibility } from './manifest-compatibility';
 import { transformSourceString } from '../transpile/transformers/util';
 import { removeStencilImports } from '../transpile/transformers/remove-stencil-imports';
@@ -7,7 +7,7 @@ import upgradeFromMetadata from '../transpile/transformers/Metadata_Upgrade_From
 import ts from 'typescript';
 
 
-export async function upgradeDependentComponents(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, bundles: Bundle[]) {
+export async function upgradeDependentComponents(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, entryModules: EntryModule[]) {
   if (!buildCtx.requiresFullBuild) {
     // if this doesn't require a full build then no need to do it again
     return;
@@ -15,7 +15,7 @@ export async function upgradeDependentComponents(config: Config, compilerCtx: Co
 
   const timeSpan = config.logger.createTimeSpan(`upgradeDependentComponents started`, true);
 
-  const doUpgrade = createDoUpgrade(config, compilerCtx, bundles);
+  const doUpgrade = createDoUpgrade(config, compilerCtx, entryModules);
 
   await Promise.all(Object.keys(compilerCtx.dependentManifests).map(async collectionName => {
     const manifest = compilerCtx.dependentManifests[collectionName];
@@ -32,7 +32,7 @@ export async function upgradeDependentComponents(config: Config, compilerCtx: Co
 }
 
 
-function createDoUpgrade(config: Config, compilerCtx: CompilerCtx, bundles: Bundle[]) {
+function createDoUpgrade(config: Config, compilerCtx: CompilerCtx, entryModules: EntryModule[]) {
 
   return async (manifest: Manifest, upgrades: CompilerUpgrade[]): Promise<void> => {
     const upgradeTransforms: ts.TransformerFactory<ts.SourceFile>[] = (upgrades.map((upgrade) => {
@@ -44,7 +44,7 @@ function createDoUpgrade(config: Config, compilerCtx: CompilerCtx, bundles: Bund
         case CompilerUpgrade.Metadata_Upgrade_From_0_1_0:
           config.logger.debug(`Metadata_Upgrade_From_0_1_0, manifestCompilerVersion: ${manifest.compiler.version}`);
           return () => {
-            return upgradeFromMetadata(bundles);
+            return upgradeFromMetadata(entryModules);
           };
 
         case CompilerUpgrade.REMOVE_STENCIL_IMPORTS:

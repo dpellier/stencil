@@ -31,12 +31,6 @@ export async function writeBuildFiles(config: Config, compilerCtx: CompilerCtx, 
     buildCtx.dirsAdded = commitResults.dirsAdded;
     totalFilesWrote = commitResults.filesWritten.length;
 
-    // build a list of all the components used
-    buildCtx.manifest.bundles.forEach(b => {
-      b.components.forEach(c => buildCtx.components.push(c));
-    });
-    buildCtx.components.sort();
-
     // successful write
     // kick off writing the cached file stuff
     // no need to wait on it finishing

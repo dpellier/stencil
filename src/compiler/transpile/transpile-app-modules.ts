@@ -1,10 +1,10 @@
-import { BuildCtx, CompilerCtx, Config, ModuleFiles } from '../../util/interfaces';
+import { BuildCtx, CompilerCtx, Config, ModuleFiles } from '../../declarations';
 import { catchError } from '../util';
 import { InMemoryFileSystem } from '../../util/in-memory-fs';
 import { transpileModules } from '../transpile/transpile';
 
 
-export async function transpileScanSrc(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
+export async function transpileAppModules(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
   if (canSkipTranspiling(config, buildCtx)) {
     // this is a rebuild, but turns out the files causing to
     // do not require us to run the transpiling again

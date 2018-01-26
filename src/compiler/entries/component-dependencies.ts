@@ -17,7 +17,7 @@ async function setComponentGraph(compilerCtx: CompilerCtx, appTags: string[], mo
 }
 
 
-export async function getRootHtmlTags(config: Config, compilerCtx: CompilerCtx, allModuleFiles: ModuleFile[]) {
+export async function getRootHtmlEntryTags(config: Config, compilerCtx: CompilerCtx, allModuleFiles: ModuleFile[]) {
   if (!config.generateWWW || !config.srcIndexHtml) return [];
 
   const appTags = getAppTags(allModuleFiles);
@@ -35,27 +35,21 @@ export async function findComponentDepsInFile(compilerCtx: CompilerCtx, appTags:
 export function findComponentDeps(appTags: string[], content: string) {
   content = normalizeContent(content);
 
-  const foundTags: string[] = [];
-  appTags.forEach(tag => {
-    if (content.includes('|' + tag + '~')) {
-      foundTags.push(tag);
-
-    } else if (content.includes('|' + tag + '|')) {
-      foundTags.push(tag);
-    }
-  });
-
-  return foundTags.sort();
+  return appTags
+    .filter(tag => {
+      return content.includes('|' + tag + '~') ||
+             content.includes('|' + tag + '|');
+    })
+    .sort();
 }
 
 
 export function normalizeContent(c: string) {
-  c = c.toLowerCase().replace(/\s/g, '~');
-  c = c.replace(/\/\//g, '_');
-  return c.toLowerCase().replace(HTML_CHARS_REGEX, '|')
+  return c.toLowerCase()
+          .replace(/\s/g, '~')
+          .replace(/\/\//g, '_')
+          .replace(/<|>|\/|\'|\"|\`/g, '|');
 }
-
-const HTML_CHARS_REGEX = /<|>|\/|\'|\"|\`/g;
 
 
 function getAppTags(allModuleFiles: ModuleFile[]) {

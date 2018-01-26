@@ -1,5 +1,5 @@
-import { AssetsMeta, BuildCtx, BundleData, CompilerCtx, ComponentData, ComponentMeta, Config,
-  EventData, ExternalStyleMeta, ListenMeta, ListenerData, Manifest, ManifestBundle, ManifestData, ModuleFile,
+import { AssetsMeta, BuildCtx, CompilerCtx, ComponentData, ComponentMeta, Config,
+  EventData, ExternalStyleMeta, ListenMeta, ListenerData, Manifest, ManifestData, ModuleFile,
   PropData, StyleData, StyleMeta } from '../../declarations';
 import { COLLECTION_MANIFEST_FILE_NAME, ENCAPSULATION, MEMBER_TYPE, PROP_TYPE } from '../../util/constants';
 import { normalizePath } from '../util';
@@ -38,7 +38,6 @@ export function serializeAppManifest(config: Config, manifestDir: string, manife
   // create the single manifest we're going to fill up with data
   const manifestData: ManifestData = {
     components: [],
-    bundles: [],
     compiler: {
       name: config.sys.compiler.name,
       version: config.sys.compiler.version,
@@ -63,9 +62,6 @@ export function serializeAppManifest(config: Config, manifestDir: string, manife
     return 0;
   });
 
-  // add to the manifest what the bundles should be
-  serializeBundles(manifestData, manifest);
-
   // set the global path if it exists
   serializeAppGlobal(config, manifestDir, manifestData, manifest);
 
@@ -86,7 +82,6 @@ export function parseDependentManifest(config: Config, collectionName: string, i
   };
 
   parseComponents(config, includeBundledOnly, manifestDir, manifestData, manifest);
-  parseBundles(includeBundledOnly, manifestData, manifest);
   parseGlobal(config, manifestDir, manifestData, manifest);
 
   return manifest;
@@ -172,6 +167,9 @@ export function parseComponentDataToModuleFile(config: Config, manifest: Manifes
   const moduleFile: ModuleFile = {
     cmpMeta: {},
     isCollectionDependency: true,
+    collectionName: manifest.compiler.name,
+    collectionCompilerVersion: manifest.compiler.version,
+    collectionTypescriptVersion: manifest.compiler.typescriptVersion,
     excludeFromCollection: excludeFromCollection(config, cmpData)
   };
   const cmpMeta = moduleFile.cmpMeta;
@@ -808,61 +806,6 @@ function parseEncapsulation(cmpData: ComponentData, cmpMeta: ComponentMeta) {
   } else {
     cmpMeta.encapsulation = ENCAPSULATION.NoEncapsulation;
   }
-}
-
-
-export function serializeBundles(manifestData: ManifestData, manifest: Manifest) {
-  manifestData.bundles = [];
-
-  const bundles = manifest.bundles;
-  if (invalidArrayData(bundles)) {
-    return;
-  }
-
-  bundles.forEach(bundle => {
-    if (invalidArrayData(bundle.components)) {
-      return;
-    }
-
-    const bundleData: BundleData = {
-      components: bundle.components.map(tag => tag.toLowerCase()).sort()
-    };
-
-    manifestData.bundles.push(bundleData);
-  });
-
-  manifestData.bundles.sort((a, b) => {
-    if (a.components[0] < b.components[0]) return -1;
-    if (a.components[0] > b.components[0]) return 1;
-    return 0;
-  });
-}
-
-
-export function parseBundles(includeBundledOnly: boolean, manifestData: ManifestData, manifest: Manifest) {
-  manifest.bundles = [];
-
-  if (includeBundledOnly) {
-    return;
-  }
-
-  if (invalidArrayData(manifestData.bundles)) {
-    return;
-  }
-
-  manifestData.bundles.forEach(bundleData => {
-    if (invalidArrayData(bundleData.components)) {
-      return;
-    }
-
-    const manifestBundle: ManifestBundle = {
-      components: bundleData.components.sort()
-    };
-
-    if (manifestBundle.components.length > 0) {
-      manifest.bundles.push(manifestBundle);
-    }
-  });
 }
 
 

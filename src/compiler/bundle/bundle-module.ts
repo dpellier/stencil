@@ -1,13 +1,13 @@
-import { BuildCtx, Bundle, Config, CompilerCtx, ModuleFile } from '../../util/interfaces';
+import { BuildCtx, CompilerCtx, Config, EntryModule, ModuleFile } from '../../declarations';
 import { generateEsModule, generateLegacyModule, runRollup } from './rollup-bundle';
 import { isTsFile } from '../util';
 
 
-export async function generateBundleModule(config: Config, contextCtx: CompilerCtx, buildCtx: BuildCtx, bundle: Bundle) {
-  if (canSkipBundleModule(config, contextCtx, buildCtx, bundle.moduleFiles, bundle.entryKey)) {
+export async function generateBundleModule(config: Config, contextCtx: CompilerCtx, buildCtx: BuildCtx, entryModule: EntryModule) {
+  if (canSkipBundleModule(config, contextCtx, buildCtx, entryModule.moduleFiles, entryModule.entryKey)) {
     // we can skip bundling, let's use our cached data
-    bundle.compiledModuleJsText = contextCtx.compiledModuleJsText[bundle.entryKey];
-    bundle.compiledModuleLegacyJsText = contextCtx.compiledModuleLegacyJsText[bundle.entryKey];
+    entryModule.compiledModuleJsText = contextCtx.compiledModuleJsText[entryModule.entryKey];
+    entryModule.compiledModuleLegacyJsText = contextCtx.compiledModuleLegacyJsText[entryModule.entryKey];
     return;
   }
 
@@ -16,21 +16,21 @@ export async function generateBundleModule(config: Config, contextCtx: CompilerC
 
   // run rollup, but don't generate yet
   // returned rollup bundle can be reused for es module and legacy
-  const rollupBundle = await runRollup(config, contextCtx, buildCtx, bundle);
+  const rollupBundle = await runRollup(config, contextCtx, buildCtx, entryModule);
 
   // bundle using only es modules and dynamic imports
-  bundle.compiledModuleJsText = await generateEsModule(config, rollupBundle);
+  entryModule.compiledModuleJsText = await generateEsModule(config, rollupBundle);
 
   // cache for later
-  contextCtx.compiledModuleJsText[bundle.entryKey] = bundle.compiledModuleJsText;
+  contextCtx.compiledModuleJsText[entryModule.entryKey] = entryModule.compiledModuleJsText;
 
   if (config.buildEs5) {
     // only create legacy modules when generating es5 fallbacks
     // bundle using commonjs using jsonp callback
-    bundle.compiledModuleLegacyJsText = await generateLegacyModule(config, rollupBundle);
+    entryModule.compiledModuleLegacyJsText = await generateLegacyModule(config, rollupBundle);
 
     // cache for later
-    contextCtx.compiledModuleLegacyJsText[bundle.entryKey] = bundle.compiledModuleLegacyJsText;
+    contextCtx.compiledModuleLegacyJsText[entryModule.entryKey] = entryModule.compiledModuleLegacyJsText;
   }
 }
 

@@ -1,23 +1,23 @@
-import { Bundle } from '../../../util/interfaces';
+import { EntryModule } from '../../../declarations';
 import { generateBundleEntryInput } from '../bundle-entry-input';
 
 
-export default function bundleEntryFile(bundle: Bundle) {
+export default function bundleEntryFile(entryModule: EntryModule) {
 
   return {
     name: 'bundleEntryFilePlugin',
 
     resolveId(importee: string) {
-      if (importee === bundle.entryKey) {
-        return bundle.entryKey;
+      if (importee === entryModule.entryKey) {
+        return entryModule.entryKey;
       }
 
       return null;
     },
 
     load(id: string) {
-      if (id === bundle.entryKey) {
-        return generateBundleEntryInput(bundle);
+      if (id === entryModule.entryKey) {
+        return generateBundleEntryInput(entryModule);
       }
 
       return null;

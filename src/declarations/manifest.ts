@@ -4,15 +4,10 @@ import * as d from './index';
 export interface Manifest {
   manifestName?: string;
   modulesFiles?: ModuleFile[];
-  bundles?: ManifestBundle[];
+  entries?: d.EntryModule[];
   global?: ModuleFile;
   dependentManifests?: Manifest[];
   compiler?: ManifestCompiler;
-}
-
-
-export interface ManifestBundle {
-  components: string[];
 }
 
 
@@ -39,19 +34,6 @@ export interface AppRegistryComponents {
 }
 
 
-export type EntryModule = ModuleFile[];
-
-
-export interface Bundle {
-  entryKey?: string;
-  moduleFiles: d.ModuleFile[];
-  compiledModuleJsText?: string;
-  compiledModuleLegacyJsText?: string;
-  requiresScopedStyles?: boolean;
-  modeNames?: string[];
-}
-
-
 export interface ModuleFiles {
   [filePath: string]: ModuleFile;
 }
@@ -62,6 +44,9 @@ export interface ModuleFile {
   dtsFilePath?: string;
   cmpMeta?: d.ComponentMeta;
   isCollectionDependency?: boolean;
+  collectionName?: string;
+  collectionCompilerVersion?: string;
+  collectionTypescriptVersion?: string;
   excludeFromCollection?: boolean;
   originalCollectionComponentPath?: string;
 }
@@ -82,7 +67,6 @@ export interface ModuleBundles {
 // DO NOT UPDATE PROPERTY KEYS COMING FROM THE EXTERNAL DATA!!
 
 export interface ManifestData {
-  bundles?: BundleData[];
   components?: ComponentData[];
   global?: string;
   compiler?: {
@@ -166,8 +150,4 @@ export interface ContextData {
 
 export interface HostElementData {
   name: string;
-}
-
-export interface BundleData {
-  components?: string[];
 }

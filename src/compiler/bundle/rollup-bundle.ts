@@ -1,4 +1,4 @@
-import { Config, CompilerCtx, Bundle, RollupBundle, BuildCtx } from '../../util/interfaces';
+import { BuildCtx, CompilerCtx, Config, EntryModule, RollupBundle } from '../../declarations';
 import bundleEntryFile from './rollup-plugins/bundle-entry-file';
 import { createOnWarnFn, loadRollupDiagnostics } from '../../util/logger/logger-rollup';
 import { generatePreamble, hasError } from '../util';
@@ -8,13 +8,13 @@ import transpiledInMemoryPlugin from './rollup-plugins/transpiled-in-memory';
 import nodeEnvVars from './rollup-plugins/node-env-vars';
 
 
-export async function runRollup(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, bundle: Bundle) {
+export async function runRollup(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, entryModule: EntryModule) {
   let rollupBundle: RollupBundle;
 
   try {
     rollupBundle = await config.sys.rollup.rollup({
-      input: bundle.entryKey,
-      cache: compilerCtx.rollupCache[bundle.entryKey],
+      input: entryModule.entryKey,
+      cache: compilerCtx.rollupCache[entryModule.entryKey],
       plugins: [
         config.sys.rollup.plugins.nodeResolve({
           jsnext: true,
@@ -24,12 +24,12 @@ export async function runRollup(config: Config, compilerCtx: CompilerCtx, buildC
           include: 'node_modules/**',
           sourceMap: false
         }),
-        bundleEntryFile(bundle),
+        bundleEntryFile(entryModule),
         transpiledInMemoryPlugin(config, compilerCtx),
         localResolution(config, compilerCtx),
         nodeEnvVars(config),
       ],
-      onwarn: createOnWarnFn(buildCtx.diagnostics, bundle.moduleFiles)
+      onwarn: createOnWarnFn(buildCtx.diagnostics, entryModule.moduleFiles)
 
     });
 
@@ -44,7 +44,7 @@ export async function runRollup(config: Config, compilerCtx: CompilerCtx, buildC
   // cache for later
   // watch out for any rollup cache bugs
   // https://github.com/rollup/rollup/issues/1372
-  compilerCtx.rollupCache[bundle.entryKey] = rollupBundle;
+  compilerCtx.rollupCache[entryModule.entryKey] = rollupBundle;
 
   return rollupBundle;
 }
