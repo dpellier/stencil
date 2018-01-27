@@ -1,6 +1,6 @@
 import { AssetsMeta, BuildCtx, CompilerCtx, ComponentData, ComponentMeta, Config,
-  EventData, ExternalStyleMeta, ListenMeta, ListenerData, Manifest, ManifestData, ModuleFile,
-  PropData, StyleData, StyleMeta } from '../../declarations';
+  EventData, ExternalStyleMeta, ListenMeta, ListenerData, Manifest, ManifestCompiler,
+  ManifestData, ModuleFile, PropData, StyleData, StyleMeta } from '../../declarations';
 import { COLLECTION_MANIFEST_FILE_NAME, ENCAPSULATION, MEMBER_TYPE, PROP_TYPE } from '../../util/constants';
 import { normalizePath } from '../util';
 
@@ -23,7 +23,7 @@ export async function writeAppManifest(config: Config, compilerCtx: CompilerCtx,
 
   // serialize the manifest into a json string and
   // add it to the list of files we need to write when we're ready
-  const manifestData = serializeAppManifest(config, manifestDir, buildCtx.manifest);
+  const manifestData = serializeAppManifest(config, manifestDir, buildCtx.moduleFiles, buildCtx.global);
 
   if (config.generateDistribution) {
     // don't bother serializing/writing the manifest if we're not creating a distribution
@@ -34,7 +34,7 @@ export async function writeAppManifest(config: Config, compilerCtx: CompilerCtx,
 }
 
 
-export function serializeAppManifest(config: Config, manifestDir: string, manifest: Manifest) {
+export function serializeAppManifest(config: Config, manifestDir: string, moduleFiles: ModuleFile[], globalModule: ModuleFile) {
   // create the single manifest we're going to fill up with data
   const manifestData: ManifestData = {
     components: [],
@@ -46,7 +46,7 @@ export function serializeAppManifest(config: Config, manifestDir: string, manife
   };
 
   // add component data for each of the manifest files
-  manifest.modulesFiles.forEach(modulesFile => {
+  moduleFiles.forEach(modulesFile => {
     if (!modulesFile.excludeFromCollection) {
       const cmpData = serializeComponent(config, manifestDir, modulesFile);
       if (cmpData) {
@@ -63,7 +63,7 @@ export function serializeAppManifest(config: Config, manifestDir: string, manife
   });
 
   // set the global path if it exists
-  serializeAppGlobal(config, manifestDir, manifestData, manifest);
+  serializeAppGlobal(config, manifestDir, manifestData, globalModule);
 
   // success!
   return manifestData;
@@ -164,12 +164,14 @@ export function serializeComponent(config: Config, manifestDir: string, moduleFi
 
 
 export function parseComponentDataToModuleFile(config: Config, manifest: Manifest, manifestDir: string, cmpData: ComponentData) {
+  const compilerInfo: ManifestCompiler = manifest.compiler || {} as any;
+
   const moduleFile: ModuleFile = {
     cmpMeta: {},
     isCollectionDependency: true,
-    collectionName: manifest.compiler.name,
-    collectionCompilerVersion: manifest.compiler.version,
-    collectionTypescriptVersion: manifest.compiler.typescriptVersion,
+    collectionName: compilerInfo.name,
+    collectionCompilerVersion: compilerInfo.version,
+    collectionTypescriptVersion: compilerInfo.typescriptVersion,
     excludeFromCollection: excludeFromCollection(config, cmpData)
   };
   const cmpMeta = moduleFile.cmpMeta;
@@ -809,12 +811,12 @@ function parseEncapsulation(cmpData: ComponentData, cmpMeta: ComponentMeta) {
 }
 
 
-export function serializeAppGlobal(config: Config, manifestDir: string, manifestData: ManifestData, manifest: Manifest) {
-  if (!manifest.global) {
+export function serializeAppGlobal(config: Config, manifestDir: string, manifestData: ManifestData, globalModule: ModuleFile) {
+  if (!globalModule) {
     return;
   }
 
-  manifestData.global = normalizePath(config.sys.path.relative(manifestDir, manifest.global.jsFilePath));
+  manifestData.global = normalizePath(config.sys.path.relative(manifestDir, globalModule.jsFilePath));
 }
 
 

@@ -1,6 +1,6 @@
 import { ConfigBundle, EntryModule, ModuleFile } from '../../../declarations';
 import { entryRequiresScopedStyles, getAppEntryTags, getEntryEncapsulations, getEntryModes,
-  getUserConfigEntryTags, prioritizeEntryTags, regroupEntryModules } from '../entry-modules';
+  getUserConfigEntryTags, regroupEntryModules } from '../entry-modules';
 import { ENCAPSULATION } from '../../../util/constants';
 
 
@@ -272,33 +272,6 @@ describe('graph-dependencies', () => {
       const entryModules = regroupEntryModules(allModules, entryModulesTags);
       expect(entryModules).toHaveLength(1);
       expect(entryModules[0]).toHaveLength(2);
-    });
-
-  });
-
-  describe('prioritizedEntries', () => {
-
-    it('remove empties', () => {
-      const entries = [
-        ['a', 'b', 'c'],
-        ['a', 'b', 'c'],
-        ['b', 'c'],
-        ['c', 'c', 'c', 'c']
-      ];
-      const prioritized = prioritizeEntryTags(entries);
-      expect(prioritized).toHaveLength(1);
-      expect(prioritized[0]).toHaveLength(3);
-    });
-
-    it('first one wins', () => {
-      const entries = [
-        ['a', 'b', 'c'],
-        ['a', 'b', 'd']
-      ];
-      const prioritized = prioritizeEntryTags(entries);
-      expect(prioritized).toHaveLength(2);
-      expect(prioritized[0]).toHaveLength(3);
-      expect(prioritized[1]).toHaveLength(1);
     });
 
   });

@@ -1,7 +1,7 @@
 import { ComponentMeta, Manifest, ManifestData, ModuleFile } from '../../../declarations';
 import { ENCAPSULATION, MEMBER_TYPE, PROP_TYPE } from '../../../util/constants';
 import { mockConfig } from '../../../testing/mocks';
-import { parseBundles, parseComponentDataToModuleFile, parseComponents, parseDidChangeDeprecated, parseWillChangeDeprecated, serializeBundles, serializeComponent } from '../manifest-data';
+import { parseComponentDataToModuleFile, parseComponents, parseDidChangeDeprecated, parseWillChangeDeprecated, serializeComponent } from '../manifest-data';
 
 
 describe('manifest components', () => {

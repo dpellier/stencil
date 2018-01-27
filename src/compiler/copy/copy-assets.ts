@@ -20,7 +20,7 @@ export async function copyComponentAssets(config: Config, compilerCtx: CompilerC
     const copyToCollectionDir: AssetsMeta[] = [];
     const copyTasks: CopyTask[] = [];
 
-    const moduleFiles = buildCtx.manifest.modulesFiles.filter(m => {
+    const moduleFiles = buildCtx.moduleFiles.filter(m => {
       return m.cmpMeta.assetsDirsMeta && m.cmpMeta.assetsDirsMeta.length;
     });
 
@@ -115,7 +115,7 @@ export function canSkipAssetsCopy(config: Config, compilerCtx: CompilerCtx, buil
     const changedFileDirPath = normalizePath(config.sys.path.dirname(changedFile));
 
     // loop through all the possible asset directories
-    buildCtx.manifest.modulesFiles.forEach(moduleFile => {
+    buildCtx.moduleFiles.forEach(moduleFile => {
       if (moduleFile.cmpMeta && moduleFile.cmpMeta.assetsDirsMeta) {
 
         // loop through each of the asset directories of each component

@@ -1,9 +1,36 @@
 import { ConfigBundle, EntryModule, ModuleFile } from '../../../declarations';
-import { getAppEntryGraph, getEntryGraphByTag } from '../entry-graph';
+import { getEntryGraphByTag, prioritizeEntryTags } from '../entry-graph';
 import { ENCAPSULATION } from '../../../util/constants';
 
 
 describe('entry graph', () => {
+
+  describe('prioritizedEntries', () => {
+
+    it('remove empties', () => {
+      const entries = [
+        ['a', 'b', 'c'],
+        ['a', 'b', 'c'],
+        ['b', 'c'],
+        ['c', 'c', 'c', 'c']
+      ];
+      const prioritized = prioritizeEntryTags(entries);
+      expect(prioritized).toHaveLength(1);
+      expect(prioritized[0]).toHaveLength(3);
+    });
+
+    it('first one wins', () => {
+      const entries = [
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd']
+      ];
+      const prioritized = prioritizeEntryTags(entries);
+      expect(prioritized).toHaveLength(2);
+      expect(prioritized[0]).toHaveLength(3);
+      expect(prioritized[1]).toHaveLength(1);
+    });
+
+  });
 
   describe('getEntryGraph', () => {
 

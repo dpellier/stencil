@@ -23,7 +23,7 @@ export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watche
     buildId: compilerCtx.activeBuildId,
     diagnostics: [],
     entryModules: [],
-    manifest: {},
+    moduleFiles: [],
     transpileBuildCount: 0,
     bundleBuildCount: 0,
     appFileBuildCount: 0,
@@ -92,6 +92,11 @@ function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCt
   // print out the time it took to build
   // and add the duration to the build results
   buildCtx.timeSpan.finish(`${buildText} ${buildStatus}${watchText}`, statusColor, bold, true);
+
+  // clear it all out for good measure
+  for (const k in buildCtx) {
+    (buildCtx as any)[k] = null;
+  }
 
   // emit a build event, which happens for inital build and rebuilds
   compilerCtx.events.emit('build', buildResults);

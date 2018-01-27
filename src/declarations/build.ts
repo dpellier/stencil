@@ -5,8 +5,10 @@ export interface BuildCtx {
   buildId: number;
   requiresFullBuild: boolean;
   diagnostics: d.Diagnostic[];
-  manifest: d.Manifest;
   entryModules: d.EntryModule[];
+  moduleFiles: d.ModuleFile[];
+  dependentManifests?: d.Manifest[];
+  global?: d.ModuleFile;
   transpileBuildCount: number;
   bundleBuildCount: number;
   appFileBuildCount: number;

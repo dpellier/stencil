@@ -1,6 +1,6 @@
 import { BuildCtx, CompilerCtx, ComponentMeta, Config, ConfigBundle, EntryModule, ModuleFile } from '../../declarations';
 import { catchError } from '../util';
-import { createCommonComponentEntries } from './entry-graph';
+import { createCommonComponentEntries, prioritizeEntryTags } from './entry-graph';
 import { DEFAULT_STYLE_MODE, ENCAPSULATION } from '../../util/constants';
 import { getRootHtmlEntryTags, setComponentGraphs } from './component-dependencies';
 import { requiresScopedStyles } from '../style/style';
@@ -11,7 +11,7 @@ export async function generateEntryModules(config: Config, compilerCtx: Compiler
   let entryModules: EntryModule[] = [];
 
   try {
-    const allModules = buildCtx.manifest.modulesFiles;
+    const allModules = Object.keys(compilerCtx.moduleFiles).map(filePath => compilerCtx.moduleFiles[filePath]);
 
     await setComponentGraphs(compilerCtx, allModules);
 
@@ -21,13 +21,11 @@ export async function generateEntryModules(config: Config, compilerCtx: Compiler
 
     const appEntryTags = getAppEntryTags(allModules);
 
-    let entryTags = createCommonComponentEntries(
+    const entryTags = createCommonComponentEntries(
       userConfigEntryModulesTags,
       rootHtmlEntryTags,
       appEntryTags
     );
-
-    entryTags = prioritizeEntryTags(entryTags);
 
     const cleanedEntryModules = regroupEntryModules(allModules, entryTags);
 
@@ -176,29 +174,6 @@ export function createEntryModule(moduleFiles: ModuleFile[]) {
   entryModule.requiresScopedStyles = entryRequiresScopedStyles(encapsulations);
 
   return entryModule;
-}
-
-
-export function prioritizeEntryTags(entryTags: string[][]) {
-  const addedTags: string[] = [];
-  const prioritized: string[][] = [];
-
-  entryTags.forEach(entryTags => {
-    const cleanedTags: string[] = [];
-
-    entryTags.forEach(entryTag => {
-      if (!addedTags.includes(entryTag)) {
-        cleanedTags.push(entryTag);
-        addedTags.push(entryTag);
-      }
-    });
-
-    if (cleanedTags.length > 0) {
-      prioritized.push(cleanedTags.sort());
-    }
-  });
-
-  return prioritized;
 }
 
 

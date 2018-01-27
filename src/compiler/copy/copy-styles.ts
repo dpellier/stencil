@@ -9,7 +9,7 @@ export async function copyComponentStyles(config: Config, compilerCtx: CompilerC
   try {
     const absSrcStylePaths: string[] = [];
 
-    const cmps = buildCtx.manifest.modulesFiles.filter(m => m.cmpMeta.stylesMeta);
+    const cmps = buildCtx.moduleFiles.filter(m => m.cmpMeta.stylesMeta);
 
     cmps.forEach(c => {
       Object.keys(c.cmpMeta.stylesMeta).forEach(modeName => {

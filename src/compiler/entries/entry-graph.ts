@@ -6,19 +6,48 @@ export function createCommonComponentEntries(
   rootHtmlEntryTags: string[],
   appEntryTags: string[]
 ) {
-  const entryModulesTags: string[][] = [];
+  let entryModulesTags: string[][] = [
+    ...userConfigEntryModulesTags
+  ];
 
   // remove tags already found in the user config
   rootHtmlEntryTags = rootHtmlEntryTags.filter(tag => {
-    return !userConfigEntryModulesTags.some(ct => ct.some(t => t === tag));
+    return !entryModulesTags.some(ct => ct.some(t => t === tag));
   });
+  entryModulesTags.push(rootHtmlEntryTags);
 
+  // remove any tags already found in user config and root html
   appEntryTags = appEntryTags.filter(tag => {
-    return !userConfigEntryModulesTags.some(ct => ct.some(t => t === tag));
+    return !entryModulesTags.some(ct => ct.some(t => t === tag));
   });
+  entryModulesTags.push(appEntryTags);
 
+  entryModulesTags = prioritizeEntryTags(entryModulesTags);
 
   return entryModulesTags;
+}
+
+
+export function prioritizeEntryTags(entryModulesTags: string[][]) {
+  const addedTags: string[] = [];
+  const prioritized: string[][] = [];
+
+  entryModulesTags.forEach(entryTags => {
+    const cleanedTags: string[] = [];
+
+    entryTags.forEach(entryTag => {
+      if (!addedTags.includes(entryTag)) {
+        cleanedTags.push(entryTag);
+        addedTags.push(entryTag);
+      }
+    });
+
+    if (cleanedTags.length > 0) {
+      prioritized.push(cleanedTags.sort());
+    }
+  });
+
+  return prioritized;
 }
 
 
