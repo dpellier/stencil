@@ -210,7 +210,7 @@ export class NodeLogger implements d.Logger {
       try {
         const graph = {
           compiler: buildResults.compiler,
-          bundleCount: buildResults.bundles.length,
+          entries: buildResults.entries,
           bundles: buildResults.bundles
         };
 

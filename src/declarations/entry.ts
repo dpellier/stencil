@@ -11,4 +11,9 @@ export interface EntryModule {
   outputFileNames?: string[];
 }
 
-export type EntryPoint = string[];
+export type EntryPoint = EntryComponent[];
+
+export interface EntryComponent {
+  tag: string;
+  dependencyOf: string[];
+}

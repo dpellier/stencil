@@ -1,4 +1,4 @@
-import { BuildBundle, BuildCtx, BuildResults, CompilerCtx, Config, WatcherResults } from '../../declarations';
+import { BuildBundle, BuildCtx, BuildResults, CompilerCtx, Config, WatcherResults, BuildEntry } from '../../declarations';
 import { catchError, hasError, pathJoin } from '../util';
 import { cleanDiagnostics } from '../../util/logger/logger-util';
 import { initWatcher } from '../watcher/watcher-init';
@@ -23,6 +23,7 @@ export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watche
     requiresFullBuild: requiresFullBuild,
     buildId: compilerCtx.activeBuildId,
     diagnostics: [],
+    entryPoints: [],
     entryModules: [],
     moduleFiles: [],
     transpileBuildCount: 0,
@@ -124,7 +125,6 @@ function generateBuildResults(config: Config, compilerCtx: CompilerCtx, buildCtx
     aborted: buildCtx.aborted,
     duration: Date.now() - buildCtx.startTime,
     isRebuild: compilerCtx.isRebuild,
-    bundles: [],
     transpileBuildCount: buildCtx.transpileBuildCount,
     bundleBuildCount: buildCtx.bundleBuildCount,
     hasChangedJsText: buildCtx.hasChangedJsText,
@@ -134,13 +134,46 @@ function generateBuildResults(config: Config, compilerCtx: CompilerCtx, buildCtx
     filesAdded: buildCtx.filesAdded.slice().sort(),
     filesDeleted: buildCtx.filesDeleted.slice().sort(),
     dirsAdded: buildCtx.dirsAdded.slice().sort(),
-    dirsDeleted: buildCtx.dirsDeleted.slice().sort()
+    dirsDeleted: buildCtx.dirsDeleted.slice().sort(),
+
+    entries: [],
+
+    bundles: buildCtx.entryModules.map(en => {
+      const buildEntry: BuildBundle = {
+        components: (en.moduleFiles || []).map(m => m.cmpMeta.tagNameMeta).sort(),
+
+        outputFiles: (en.outputFileNames || []).slice().sort(),
+
+        inputFiles: (en.moduleFiles || []).map(m => {
+          return pathJoin(config, config.sys.path.relative(config.rootDir, m.jsFilePath));
+        }).sort()
+      };
+
+      const modes = en.modeNames.slice().sort();
+      if (modes.length > 1 || (modes.length === 1 && modes[0] !== DEFAULT_STYLE_MODE)) {
+        buildEntry.modes = modes;
+      }
+
+      return buildEntry;
+    })
   };
 
-  buildCtx.entryModules.forEach(en => {
+  buildCtx.entryPoints.forEach(ep => {
+    ep.forEach(ec => {
+      const buildEntry: BuildEntry = {
+        tag: ec.tag,
+        dependencyOf: ec.dependencyOf.slice()
+      };
+      buildResults.entries.push(buildEntry);
+    });
+  });
+
+  buildCtx.entryModules.map(en => {
     const buildEntry: BuildBundle = {
-      tags: (en.moduleFiles || []).map(m => m.cmpMeta.tagNameMeta).sort(),
+      components: (en.moduleFiles || []).map(m => m.cmpMeta.tagNameMeta).sort(),
+
       outputFiles: (en.outputFileNames || []).slice().sort(),
+
       inputFiles: (en.moduleFiles || []).map(m => {
         return pathJoin(config, config.sys.path.relative(config.rootDir, m.jsFilePath));
       }).sort()
@@ -151,7 +184,7 @@ function generateBuildResults(config: Config, compilerCtx: CompilerCtx, buildCtx
       buildEntry.modes = modes;
     }
 
-    buildResults.bundles.push(buildEntry);
+    return buildEntry;
   });
 
   return buildResults;

@@ -6,6 +6,7 @@ export interface BuildCtx {
   requiresFullBuild: boolean;
   diagnostics: d.Diagnostic[];
   entryModules: d.EntryModule[];
+  entryPoints: d.EntryPoint[];
   moduleFiles: d.ModuleFile[];
   global?: d.ModuleFile;
   transpileBuildCount: number;
@@ -34,7 +35,6 @@ export interface BuildResults {
   diagnostics: d.Diagnostic[];
   hasError: boolean;
   aborted?: boolean;
-  bundles: BuildBundle[];
   duration: number;
   isRebuild: boolean;
   filesWritten: string[];
@@ -47,16 +47,23 @@ export interface BuildResults {
   filesUpdated: string[];
   filesAdded: string[];
   filesDeleted: string[];
+  bundles: BuildBundle[];
+  entries: BuildEntry[];
 }
 
 
 export interface BuildBundle {
-  tags: string[];
+  components: string[];
   outputFiles: string[];
   inputFiles: string[];
   modes?: string[];
 }
 
+
+export interface BuildEntry {
+  tag: string;
+  dependencyOf: string[];
+}
 
 export interface BuildConditionals {
   coreId?: 'core' | 'core.pf';

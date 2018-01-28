@@ -1,8 +1,8 @@
-import { BuildCtx, CompilerCtx, ComponentMeta, Config, ConfigBundle, EntryModule, ModuleFile } from '../../declarations';
+import { BuildCtx, CompilerCtx, ComponentMeta, Config, ConfigBundle, EntryModule, EntryPoint, ModuleFile } from '../../declarations';
 import { catchError } from '../util';
 import { DEFAULT_STYLE_MODE, ENCAPSULATION } from '../../util/constants';
 import { generateComponentEntries } from './entry-components';
-import { getRootHtmlEntryTags, setComponentGraphs } from './component-dependencies';
+import { setComponentGraphs } from './component-dependencies';
 import { requiresScopedStyles } from '../style/style';
 import { validateComponentTag } from '../config/validate-component';
 
@@ -17,18 +17,15 @@ export async function generateEntryModules(config: Config, compilerCtx: Compiler
 
     const userConfigEntryModulesTags = getUserConfigEntryTags(config.bundles, allModules);
 
-    const rootHtmlEntryTags = await getRootHtmlEntryTags(config, compilerCtx, allModules);
-
     const appEntryTags = getAppEntryTags(allModules);
 
-    const entryTags = generateComponentEntries(
+    buildCtx.entryPoints = generateComponentEntries(
       allModules,
       userConfigEntryModulesTags,
-      rootHtmlEntryTags,
       appEntryTags
     );
 
-    const cleanedEntryModules = regroupEntryModules(allModules, entryTags);
+    const cleanedEntryModules = regroupEntryModules(allModules, buildCtx.entryPoints);
 
     buildCtx.entryModules = cleanedEntryModules.map(createEntryModule);
 
@@ -95,7 +92,7 @@ export function entryRequiresScopedStyles(encapsulations?: ENCAPSULATION[]) {
 }
 
 
-export function regroupEntryModules(allModules: ModuleFile[], entryModulesTags: string[][]) {
+export function regroupEntryModules(allModules: ModuleFile[], entryPoints: EntryPoint[]) {
   const outtedNoEncapsulation: ModuleFile[] = [];
   const outtedScopedCss: ModuleFile[] = [];
   const outtedShadowDom: ModuleFile[] = [];
@@ -106,8 +103,10 @@ export function regroupEntryModules(allModules: ModuleFile[], entryModulesTags: 
     outtedShadowDom
   ];
 
-  entryModulesTags.forEach(entryTags => {
-    const entryModules = allModules.filter(m => entryTags.includes(m.cmpMeta.tagNameMeta));
+  entryPoints.forEach(entryPoint => {
+    const entryModules = allModules.filter(m => {
+      return entryPoint.some(ep => ep.tag === m.cmpMeta.tagNameMeta);
+    });
 
     const noEncapsulation = entryModules.filter(m => {
       return m.cmpMeta.encapsulation !== ENCAPSULATION.ScopedCss && m.cmpMeta.encapsulation !== ENCAPSULATION.ShadowDom;
