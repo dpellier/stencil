@@ -14,7 +14,7 @@ export interface CompilerCtx {
   rollupCache?: { [cacheKey: string]: any };
   compiledModuleJsText?: ModuleBundles;
   compiledModuleLegacyJsText?: ModuleBundles;
-  dependentManifests?: {[collectionName: string]: Manifest};
+  dependentManifests?: Manifest[];
   appFiles?: {
     loader?: string;
     loaderContent?: string;

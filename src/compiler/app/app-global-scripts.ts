@@ -58,11 +58,11 @@ export async function generateAppGlobalContents(config: Config, compilerCtx: Com
 
 
 async function loadDependentGlobalJsContents(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, sourceTarget: SourceTarget): Promise<string[]> {
-  if (!buildCtx.dependentManifests) {
+  if (!compilerCtx.dependentManifests) {
     return [];
   }
 
-  const dependentManifests = buildCtx.dependentManifests
+  const dependentManifests = compilerCtx.dependentManifests
                                 .filter(m => m.global && m.global.jsFilePath);
 
   return Promise.all(dependentManifests.map(dependentManifest => {

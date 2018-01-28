@@ -17,12 +17,11 @@ export async function upgradeDependentComponents(config: Config, compilerCtx: Co
 
   const doUpgrade = createDoUpgrade(config, compilerCtx, buildCtx.entryModules);
 
-  await Promise.all(Object.keys(compilerCtx.dependentManifests).map(async collectionName => {
-    const manifest = compilerCtx.dependentManifests[collectionName];
-    const upgrades = validateManifestCompatibility(config, manifest);
+  await Promise.all(compilerCtx.dependentManifests.map(async dependentManifest => {
+    const upgrades = validateManifestCompatibility(config, dependentManifest);
 
     try {
-      await doUpgrade(manifest, upgrades);
+      await doUpgrade(dependentManifest, upgrades);
     } catch (e) {
       config.logger.error(`error performing compiler upgrade: ${e}`);
     }

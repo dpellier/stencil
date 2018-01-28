@@ -13,9 +13,10 @@ export function loadDependentManifests(config: Config, ctx: CompilerCtx): Promis
 
 async function loadDependentManifest(config: Config, compilerCtx: CompilerCtx, dependentCollection: DependentCollection) {
 
-  if (compilerCtx.dependentManifests[dependentCollection.name]) {
+  let dependentManifest = compilerCtx.dependentManifests.find(m => m.manifestName === dependentCollection.name);
+  if (dependentManifest) {
     // we've already cached the manifest, no need for another resolve/readFile/parse
-    return compilerCtx.dependentManifests[dependentCollection.name];
+    return dependentManifest;
   }
 
   // figure out the path to the dependent collection's package.json
@@ -47,7 +48,7 @@ async function loadDependentManifest(config: Config, compilerCtx: CompilerCtx, d
   const dependentManifestDir = normalizePath(config.sys.path.dirname(dependentManifestFilePath));
 
   // parse the json string into our Manifest data
-  const dependentManifest = parseDependentManifest(
+  dependentManifest = parseDependentManifest(
     config,
     dependentCollection.name,
     dependentCollection.includeBundledOnly,
@@ -58,7 +59,7 @@ async function loadDependentManifest(config: Config, compilerCtx: CompilerCtx, d
   await copySourceCollectionComponentsToDistribution(config, compilerCtx, dependentManifest.modulesFiles);
 
   // cache it for later yo
-  compilerCtx.dependentManifests[dependentCollection.name] = dependentManifest;
+  compilerCtx.dependentManifests.push(dependentManifest);
 
   // so let's recap: we've read the file, parsed it apart, and cached it, congrats
   return dependentManifest;
