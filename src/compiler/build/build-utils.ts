@@ -1,7 +1,8 @@
-import { BuildCtx, BuildResults, CompilerCtx, Config, WatcherResults } from '../../declarations';
+import { BuildBundle, BuildCtx, BuildResults, CompilerCtx, Config, WatcherResults } from '../../declarations';
 import { catchError, hasError } from '../util';
 import { cleanDiagnostics } from '../../util/logger/logger-util';
 import { initWatcher } from '../watcher/watcher-init';
+import { DEFAULT_STYLE_MODE } from '../../util/constants';
 
 
 export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watcher: WatcherResults) {
@@ -135,7 +136,7 @@ function generateBuildResultsStats(compilerCtx: CompilerCtx, buildCtx: BuildCtx,
   buildResults.stats = {
     duration: Date.now() - buildCtx.startTime,
     isRebuild: compilerCtx.isRebuild,
-    components: [],
+    bundles: [],
     transpileBuildCount: buildCtx.transpileBuildCount,
     bundleBuildCount: buildCtx.bundleBuildCount,
     hasChangedJsText: buildCtx.hasChangedJsText,
@@ -147,6 +148,20 @@ function generateBuildResultsStats(compilerCtx: CompilerCtx, buildCtx: BuildCtx,
     dirsAdded: buildCtx.dirsAdded.slice().sort(),
     dirsDeleted: buildCtx.dirsDeleted.slice().sort()
   };
+
+  buildCtx.entryModules.forEach(entryModule => {
+    const buildEntry: BuildBundle = {
+      tags: entryModule.moduleFiles.map(m => m.cmpMeta.tagNameMeta),
+      files: entryModule.moduleFiles.map(m => m.jsFilePath)
+    };
+
+    const modes = entryModule.modeNames.slice();
+    if (modes.length > 1 || (modes.length === 1 && modes[0] !== DEFAULT_STYLE_MODE)) {
+      buildEntry.modes = modes;
+    }
+
+    buildResults.stats.bundles.push(buildEntry);
+  });
 }
 
 

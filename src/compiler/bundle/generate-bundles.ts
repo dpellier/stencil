@@ -6,18 +6,18 @@ import { getStyleIdPlaceholder, getStylePlaceholder, replaceBundleIdPlaceholder 
 import { transpileToEs5 } from '../transpile/core-build';
 
 
-export function generateBundles(config: Config, comilerCtx: CompilerCtx, buildCtx: BuildCtx, entryModules: EntryModule[]) {
+export function generateBundles(config: Config, comilerCtx: CompilerCtx, buildCtx: BuildCtx) {
   // both styles and modules are done bundling
   // combine the styles and modules together
   // generate the actual files to write
   const timeSpan = config.logger.createTimeSpan(`generate bundles started`);
 
-  entryModules.forEach(bundle => {
-    generateBundle(config, comilerCtx, buildCtx, bundle);
+  buildCtx.entryModules.forEach(entryModule => {
+    generateBundle(config, comilerCtx, buildCtx, entryModule);
   });
 
   // create the registry of all the components
-  const cmpRegistry = generateComponentRegistry(entryModules);
+  const cmpRegistry = generateComponentRegistry(buildCtx.entryModules);
 
   timeSpan.finish(`generate bundles finished`);
 
@@ -242,8 +242,8 @@ export function generateComponentRegistry(entryModules: EntryModule[]) {
   const registryComponents: ComponentMeta[] = [];
   const cmpRegistry: ComponentRegistry = {};
 
-  entryModules.forEach(bundle => {
-    bundle.moduleFiles.filter(m => m.cmpMeta).forEach(moduleFile => {
+  entryModules.forEach(entryModule => {
+    entryModule.moduleFiles.filter(m => m.cmpMeta).forEach(moduleFile => {
       registryComponents.push(moduleFile.cmpMeta);
     });
   });

@@ -39,8 +39,8 @@ describe('build', () => {
 
     const r = await c.build();
     expect(r.diagnostics).toEqual([]);
-    expect(r.stats.components.length).toBe(1);
-    expect(r.stats.components).toContain('cmp-a');
+    expect(r.stats.bundles).toHaveLength(1);
+    expect(r.stats.bundles[0].tags[0]).toContain('cmp-a');
     expect(r.stats.transpileBuildCount).toBe(1);
     expect(r.stats.bundleBuildCount).toBe(1);
 
@@ -55,7 +55,7 @@ describe('build', () => {
   it('should build no components', async () => {
     const r = await c.build();
     expect(r.diagnostics).toEqual([]);
-    expect(r.stats.components.length).toBe(0);
+    expect(r.stats.bundles).toHaveLength(0);
     expect(r.stats.transpileBuildCount).toBe(0);
     expect(r.stats.bundleBuildCount).toBe(0);
   });

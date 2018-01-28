@@ -35,10 +35,10 @@ export interface BuildResults {
   hasError: boolean;
   aborted?: boolean;
   stats?: {
+    bundles: BuildBundle[];
     duration: number;
     isRebuild: boolean;
     filesWritten: string[];
-    components: string[];
     transpileBuildCount: number;
     bundleBuildCount: number;
     hasChangedJsText: boolean;
@@ -49,6 +49,13 @@ export interface BuildResults {
     filesAdded: string[];
     filesDeleted: string[];
   };
+}
+
+
+export interface BuildBundle {
+  tags: string[];
+  files: string[];
+  modes?: string[];
 }
 
 

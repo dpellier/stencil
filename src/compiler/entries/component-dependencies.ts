@@ -13,7 +13,7 @@ export async function setComponentGraphs(compilerCtx: CompilerCtx, allModuleFile
 async function setComponentGraph(compilerCtx: CompilerCtx, appTags: string[], moduleFile: ModuleFile) {
   const foundTags = await findComponentDepsInFile(compilerCtx, appTags, moduleFile.jsFilePath);
 
-  moduleFile.cmpMeta.componentGraph = foundTags.filter(t => t !== moduleFile.cmpMeta.tagNameMeta);
+  moduleFile.cmpMeta.dependencies = foundTags.filter(t => t !== moduleFile.cmpMeta.tagNameMeta);
 }
 
 

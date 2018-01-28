@@ -1,14 +1,14 @@
 import { BuildCtx, CompilerCtx, ComponentMeta, Config, ConfigBundle, EntryModule, ModuleFile } from '../../declarations';
 import { catchError } from '../util';
-import { createCommonComponentEntries, prioritizeEntryTags } from './entry-graph';
 import { DEFAULT_STYLE_MODE, ENCAPSULATION } from '../../util/constants';
+import { generateComponentEntries } from './entry-components';
 import { getRootHtmlEntryTags, setComponentGraphs } from './component-dependencies';
 import { requiresScopedStyles } from '../style/style';
 import { validateComponentTag } from '../config/validate-component';
 
 
 export async function generateEntryModules(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
-  let entryModules: EntryModule[] = [];
+  buildCtx.entryModules = [];
 
   try {
     const allModules = Object.keys(compilerCtx.moduleFiles).map(filePath => compilerCtx.moduleFiles[filePath]);
@@ -21,7 +21,8 @@ export async function generateEntryModules(config: Config, compilerCtx: Compiler
 
     const appEntryTags = getAppEntryTags(allModules);
 
-    const entryTags = createCommonComponentEntries(
+    const entryTags = generateComponentEntries(
+      allModules,
       userConfigEntryModulesTags,
       rootHtmlEntryTags,
       appEntryTags
@@ -29,13 +30,11 @@ export async function generateEntryModules(config: Config, compilerCtx: Compiler
 
     const cleanedEntryModules = regroupEntryModules(allModules, entryTags);
 
-    entryModules = cleanedEntryModules.map(createEntryModule);
+    buildCtx.entryModules = cleanedEntryModules.map(createEntryModule);
 
   } catch (e) {
     catchError(buildCtx.diagnostics, e);
   }
-
-  return entryModules;
 }
 
 
@@ -200,20 +199,27 @@ export function getUserConfigEntryTags(configBundles: ConfigBundle[], allModules
       return 0;
     });
 
-  const entryTags = configBundles.map(b => {
+  const definedTags: string[] = [];
+  const entryTags = configBundles
+    .map(b => {
     return b.components
-            .map(tag => {
-              tag = validateComponentTag(tag);
+      .map(tag => {
+        tag = validateComponentTag(tag);
 
-              const moduleFile = allModules.find(m => m.cmpMeta.tagNameMeta === tag);
-              if (!moduleFile) {
-                throw new Error(`Component tag "${tag}" is defined in a bundle but no matching component was found within this app or its collections.`);
-              }
+        const moduleFile = allModules.find(m => m.cmpMeta.tagNameMeta === tag);
+        if (!moduleFile) {
+          throw new Error(`Component tag "${tag}" is defined in a bundle but no matching component was found within this app or its collections.`);
+        }
 
-              return tag;
-            })
-            .sort();
+        if (definedTags.includes(tag)) {
+          throw new Error(`Component tag "${tag}" has been defined multiple times in the "bundles" config.`);
+        }
+
+        definedTags.push(tag);
+        return tag;
+      })
+      .sort();
   });
 
-  return prioritizeEntryTags(entryTags);
+  return entryTags;
 }

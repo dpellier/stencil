@@ -7,7 +7,7 @@ import upgradeFromMetadata from '../transpile/transformers/Metadata_Upgrade_From
 import ts from 'typescript';
 
 
-export async function upgradeDependentComponents(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, entryModules: EntryModule[]) {
+export async function upgradeDependentComponents(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
   if (!buildCtx.requiresFullBuild) {
     // if this doesn't require a full build then no need to do it again
     return;
@@ -15,7 +15,7 @@ export async function upgradeDependentComponents(config: Config, compilerCtx: Co
 
   const timeSpan = config.logger.createTimeSpan(`upgradeDependentComponents started`, true);
 
-  const doUpgrade = createDoUpgrade(config, compilerCtx, entryModules);
+  const doUpgrade = createDoUpgrade(config, compilerCtx, buildCtx.entryModules);
 
   await Promise.all(Object.keys(compilerCtx.dependentManifests).map(async collectionName => {
     const manifest = compilerCtx.dependentManifests[collectionName];

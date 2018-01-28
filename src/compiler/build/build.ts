@@ -48,25 +48,25 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
 
     // we've got the compiler context filled with app modules and collection dependency modules
     // figure out how all these components should be connected
-    const entries = await generateEntryModules(config, compilerCtx, buildCtx);
+    await generateEntryModules(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // bundle modules and styles into separate files phase
-    const bundles = await bundleModules(config, compilerCtx, buildCtx, entries);
+    await bundleModules(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // create each of the components's styles
-    await generateStyles(config, compilerCtx, buildCtx, bundles);
+    await generateStyles(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // both styles and modules are done bundling
     // inject the styles into the modules and
     // generate each of the output bundles
-    const cmpRegistry = generateBundles(config, compilerCtx, buildCtx, bundles);
+    const cmpRegistry = generateBundles(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // generate the app files, such as app.js, app.core.js
-    await generateAppFiles(config, compilerCtx, buildCtx, bundles, cmpRegistry);
+    await generateAppFiles(config, compilerCtx, buildCtx, cmpRegistry);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // copy all assets
@@ -86,7 +86,7 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // prerender that app
-    await prerenderApp(config, compilerCtx, buildCtx, bundles);
+    await prerenderApp(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // write all the files and copy asset files

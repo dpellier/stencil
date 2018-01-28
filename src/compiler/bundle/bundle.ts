@@ -2,10 +2,9 @@ import { BuildCtx, CompilerCtx, Config } from '../../declarations';
 import { catchError } from '../util';
 import { generateBundleModule } from './bundle-module';
 import { upgradeDependentComponents } from '../upgrade-dependents/index';
-import { EntryModule } from '../../declarations/index';
 
 
-export async function bundleModules(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, entryModules: EntryModule[]) {
+export async function bundleModules(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
   if (config.generateWWW) {
     config.logger.debug(`bundle, buildDir: ${config.buildDir}`);
   }
@@ -21,10 +20,10 @@ export async function bundleModules(config: Config, compilerCtx: CompilerCtx, bu
 
     // Look at all dependent components from outside collections and
     // upgrade the components to be compatible with this version if need be
-    await upgradeDependentComponents(config, compilerCtx, buildCtx, entryModules);
+    await upgradeDependentComponents(config, compilerCtx, buildCtx);
 
     // kick off bundling
-    await Promise.all(entryModules.map(async entryModule => {
+    await Promise.all(buildCtx.entryModules.map(async entryModule => {
       await generateBundleModule(config, compilerCtx, buildCtx, entryModule);
     }));
 
@@ -33,6 +32,4 @@ export async function bundleModules(config: Config, compilerCtx: CompilerCtx, bu
   }
 
   timeSpan.finish(`bundling finished`);
-
-  return entryModules;
 }

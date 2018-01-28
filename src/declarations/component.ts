@@ -62,7 +62,7 @@ export interface ComponentMeta {
   assetsDirsMeta?: AssetsMeta[];
   componentConstructor?: ComponentConstructor;
   componentClass?: string;
-  componentGraph?: ComponentGraph;
+  dependencies?: ComponentGraph;
   jsdoc?: JSDoc;
 }
 

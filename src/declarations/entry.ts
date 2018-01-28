@@ -9,3 +9,5 @@ export interface EntryModule {
   requiresScopedStyles?: boolean;
   modeNames?: string[];
 }
+
+export type EntryPoint = string[];

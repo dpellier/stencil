@@ -126,7 +126,7 @@ describe('component-styles', () => {
 
       const r = await c.build();
       expect(r.diagnostics).toEqual([]);
-      expect(r.stats.components).toHaveLength(1);
+      expect(r.stats.bundles[0].tags).toEqual(['cmp-a']);
       expect(r.stats.transpileBuildCount).toBe(1);
       expect(r.stats.bundleBuildCount).toBe(1);
 
