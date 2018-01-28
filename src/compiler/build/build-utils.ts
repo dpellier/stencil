@@ -1,5 +1,5 @@
 import { BuildBundle, BuildCtx, BuildResults, CompilerCtx, Config, WatcherResults } from '../../declarations';
-import { catchError, hasError } from '../util';
+import { catchError, hasError, pathJoin } from '../util';
 import { cleanDiagnostics } from '../../util/logger/logger-util';
 import { initWatcher } from '../watcher/watcher-init';
 import { DEFAULT_STYLE_MODE } from '../../util/constants';
@@ -62,7 +62,7 @@ export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watche
 
 
 function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
-  const buildResults = generateBuildResults(compilerCtx, buildCtx);
+  const buildResults = generateBuildResults(config, compilerCtx, buildCtx);
 
   // log any errors/warnings
   config.logger.printDiagnostics(buildResults.diagnostics);
@@ -114,7 +114,7 @@ function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCt
 }
 
 
-function generateBuildResults(compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
+function generateBuildResults(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
   // create the build results that get returned
   const buildResults: BuildResults = {
     buildId: buildCtx.buildId,
@@ -136,13 +136,16 @@ function generateBuildResults(compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
     dirsDeleted: buildCtx.dirsDeleted.slice().sort()
   };
 
-  buildCtx.entryModules.forEach(entryModule => {
+  buildCtx.entryModules.forEach(en => {
     const buildEntry: BuildBundle = {
-      tags: entryModule.moduleFiles.map(m => m.cmpMeta.tagNameMeta),
-      files: entryModule.moduleFiles.map(m => m.jsFilePath)
+      tags: (en.moduleFiles || []).map(m => m.cmpMeta.tagNameMeta).sort(),
+      outputFiles: (en.outputFileNames || []).slice().sort(),
+      inputFiles: (en.moduleFiles || []).map(m => {
+        return pathJoin(config, config.sys.path.relative(config.rootDir, m.jsFilePath));
+      }).sort()
     };
 
-    const modes = entryModule.modeNames.slice();
+    const modes = en.modeNames.slice().sort();
     if (modes.length > 1 || (modes.length === 1 && modes[0] !== DEFAULT_STYLE_MODE)) {
       buildEntry.modes = modes;
     }

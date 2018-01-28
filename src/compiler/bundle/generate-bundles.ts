@@ -1,23 +1,30 @@
 import { BuildCtx, CompilerCtx, ComponentMeta, ComponentRegistry, Config, EntryModule, ModuleFile, SourceTarget } from '../../declarations';
+import { catchError, hasError, minifyJs, pathJoin } from '../util';
 import { DEFAULT_STYLE_MODE } from '../../util/constants';
-import { hasError, minifyJs, pathJoin } from '../util';
 import { getAppDistDir, getAppWWWBuildDir, getBundleFilename } from '../app/app-file-naming';
 import { getStyleIdPlaceholder, getStylePlaceholder, replaceBundleIdPlaceholder } from '../../util/data-serialize';
 import { transpileToEs5 } from '../transpile/core-build';
 
 
-export function generateBundles(config: Config, comilerCtx: CompilerCtx, buildCtx: BuildCtx) {
+export async function generateBundles(config: Config, comilerCtx: CompilerCtx, buildCtx: BuildCtx) {
   // both styles and modules are done bundling
   // combine the styles and modules together
   // generate the actual files to write
   const timeSpan = config.logger.createTimeSpan(`generate bundles started`);
 
-  buildCtx.entryModules.forEach(entryModule => {
-    generateBundle(config, comilerCtx, buildCtx, entryModule);
-  });
+  let cmpRegistry: ComponentRegistry;
 
-  // create the registry of all the components
-  const cmpRegistry = generateComponentRegistry(buildCtx.entryModules);
+  try {
+    await Promise.all(buildCtx.entryModules.map(async entryModule => {
+      await generateBundle(config, comilerCtx, buildCtx, entryModule);
+    }));
+
+    // create the registry of all the components
+    cmpRegistry = generateComponentRegistry(buildCtx.entryModules);
+
+  } catch (e) {
+    catchError(buildCtx.diagnostics, e);
+  }
 
   timeSpan.finish(`generate bundles finished`);
 
@@ -25,10 +32,10 @@ export function generateBundles(config: Config, comilerCtx: CompilerCtx, buildCt
 }
 
 
-function generateBundle(config: Config, comilerCtx: CompilerCtx, buildCtx: BuildCtx, entryModule: EntryModule) {
-  entryModule.modeNames.forEach(modeName => {
-    generateBundleMode(config, comilerCtx, buildCtx, entryModule, modeName);
-  });
+async function generateBundle(config: Config, comilerCtx: CompilerCtx, buildCtx: BuildCtx, entryModule: EntryModule) {
+  await Promise.all(entryModule.modeNames.map(async modeName => {
+    await generateBundleMode(config, comilerCtx, buildCtx, entryModule, modeName);
+  }));
 }
 
 
@@ -44,14 +51,14 @@ async function generateBundleMode(config: Config, comilerCtx: CompilerCtx, build
   setBundleModeIds(entryModule.moduleFiles, modeName, bundleId);
 
   // generate the bundle build for mode, no scoped styles, and esm
-  await generateBundleBuild(config, comilerCtx, jsText, bundleId, false);
+  await generateBundleBuild(config, comilerCtx, entryModule, jsText, bundleId, false);
 
   if (entryModule.requiresScopedStyles) {
     // create js text for: mode, scoped styles, esm
     jsText = await createBundleJsText(config, comilerCtx, buildCtx, entryModule, modeName, true);
 
     // generate the bundle build for: mode, esm and scoped styles
-    await generateBundleBuild(config, comilerCtx, jsText, bundleId, true);
+    await generateBundleBuild(config, comilerCtx, entryModule, jsText, bundleId, true);
   }
 
   if (config.buildEs5) {
@@ -59,14 +66,14 @@ async function generateBundleMode(config: Config, comilerCtx: CompilerCtx, build
     jsText = await createBundleJsText(config, comilerCtx, buildCtx, entryModule, modeName, false, 'es5');
 
     // generate the bundle build for: mode, no scoped styles and es5
-    await generateBundleBuild(config, comilerCtx, jsText, bundleId, false, 'es5');
+    await generateBundleBuild(config, comilerCtx, entryModule, jsText, bundleId, false, 'es5');
 
     if (entryModule.requiresScopedStyles) {
       // create js text for: mode, scoped styles, es5
       jsText = await createBundleJsText(config, comilerCtx, buildCtx, entryModule, modeName, true, 'es5');
 
       // generate the bundle build for: mode, es5 and scoped styles
-      await generateBundleBuild(config, comilerCtx, jsText, bundleId, true, 'es5');
+      await generateBundleBuild(config, comilerCtx, entryModule, jsText, bundleId, true, 'es5');
     }
   }
 }
@@ -93,9 +100,12 @@ async function createBundleJsText(config: Config, compilerCtx: CompilerCtx, buil
 }
 
 
-async function generateBundleBuild(config: Config, compilerCtx: CompilerCtx, jsText: string, bundleId: string, isScopedStyles: boolean, sourceTarget?: SourceTarget) {
+async function generateBundleBuild(config: Config, compilerCtx: CompilerCtx, entryModule: EntryModule, jsText: string, bundleId: string, isScopedStyles: boolean, sourceTarget?: SourceTarget) {
   // create the file name
   const fileName = getBundleFilename(bundleId, isScopedStyles, sourceTarget);
+
+  entryModule.outputFileNames = entryModule.outputFileNames || [];
+  entryModule.outputFileNames.push(fileName);
 
   // get the absolute path to where it'll be saved in www
   const wwwBuildPath = pathJoin(config, getAppWWWBuildDir(config), fileName);

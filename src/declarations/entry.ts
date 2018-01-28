@@ -8,6 +8,7 @@ export interface EntryModule {
   compiledModuleLegacyJsText?: string;
   requiresScopedStyles?: boolean;
   modeNames?: string[];
+  outputFileNames?: string[];
 }
 
 export type EntryPoint = string[];

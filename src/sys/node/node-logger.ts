@@ -178,30 +178,34 @@ export class NodeLogger implements d.Logger {
   }
 
   writeLogCommit(append: boolean, buildResults: d.BuildResults) {
-    if (this.writeLogFilePath) {
+    try {
+      if (this.writeLogFilePath) {
 
-      if (buildResults) {
-        this.queueWriteLog('F', [`files written: ${buildResults.filesWritten.length}`]);
-        this.queueWriteLog('F', [JSON.stringify(buildResults.bundles, null, 2)]);
-      }
+        if (buildResults) {
+          this.queueWriteLog('F', [`files written: ${buildResults.filesWritten.length}`]);
+          this.queueWriteLog('F', [`compiled bundles: ${buildResults.bundles.length}\n` + JSON.stringify(buildResults.bundles, null, 2)]);
+        }
 
-      this.queueWriteLog('F', ['--------------------------------------']);
+        this.queueWriteLog('F', ['--------------------------------------']);
 
-      const log = this.writeLogQueue.join('\n');
+        const log = this.writeLogQueue.join('\n');
 
-      if (append) {
-        try {
-          fs.accessSync(this.writeLogFilePath);
-        } catch (e) {
-          append = false;
+        if (append) {
+          try {
+            fs.accessSync(this.writeLogFilePath);
+          } catch (e) {
+            append = false;
+          }
+        }
+
+        if (append) {
+          fs.appendFileSync(this.writeLogFilePath, log);
+        } else {
+          fs.writeFileSync(this.writeLogFilePath, log);
         }
       }
-
-      if (append) {
-        fs.appendFileSync(this.writeLogFilePath, log);
-      } else {
-        fs.writeFileSync(this.writeLogFilePath, log);
-      }
+    } catch (e) {
+      console.log(e);
     }
 
     this.writeLogQueue.length = 0;

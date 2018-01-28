@@ -51,7 +51,8 @@ export interface BuildResults {
 
 export interface BuildBundle {
   tags: string[];
-  files: string[];
+  outputFiles: string[];
+  inputFiles: string[];
   modes?: string[];
 }
 

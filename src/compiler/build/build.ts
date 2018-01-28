@@ -62,7 +62,7 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     // both styles and modules are done bundling
     // inject the styles into the modules and
     // generate each of the output bundles
-    const cmpRegistry = generateBundles(config, compilerCtx, buildCtx);
+    const cmpRegistry = await generateBundles(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // generate the app files, such as app.js, app.core.js
