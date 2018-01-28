@@ -30,6 +30,7 @@ export interface BuildCtx {
 
 export interface BuildResults {
   buildId: number;
+  compiler: string;
   diagnostics: d.Diagnostic[];
   hasError: boolean;
   aborted?: boolean;

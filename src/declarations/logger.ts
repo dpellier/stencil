@@ -18,8 +18,9 @@ export interface Logger {
   gray(msg: string): string;
   bold(msg: string): string;
   dim(msg: string): string;
-  writeLogFilePath: string;
-  writeLogCommit(append: boolean, buildResults?: d.BuildResults): void;
+  buildLogFilePath: string;
+  graphLogFilePath: string;
+  writeLogs(append: boolean, buildResults?: d.BuildResults): void;
 }
 
 

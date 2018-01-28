@@ -100,7 +100,7 @@ function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCt
   }
 
   // write all of our logs to disk if config'd to do so
-  config.logger.writeLogCommit(compilerCtx.isRebuild, buildResults);
+  config.logger.writeLogs(compilerCtx.isRebuild, buildResults);
 
   // emit a build event, which happens for inital build and rebuilds
   compilerCtx.events.emit('build', buildResults);
@@ -118,6 +118,7 @@ function generateBuildResults(config: Config, compilerCtx: CompilerCtx, buildCtx
   // create the build results that get returned
   const buildResults: BuildResults = {
     buildId: buildCtx.buildId,
+    compiler: `${config.sys.compiler.name} v${config.sys.compiler.version}`,
     diagnostics: cleanDiagnostics(buildCtx.diagnostics),
     hasError: hasError(buildCtx.diagnostics),
     aborted: buildCtx.aborted,

@@ -107,13 +107,21 @@ export function validatePaths(config: Config) {
   }
 
   if (config.writeLog) {
-    if (typeof config.logFilePath !== 'string') {
-      config.logFilePath = DEFAULT_LOG_FILE_NAME;
+    if (typeof config.buildLogFilePath !== 'string') {
+      config.buildLogFilePath = DEFAULT_BUILD_LOG_FILE_NAME;
     }
-    if (!path.isAbsolute(config.logFilePath)) {
-      config.logFilePath = normalizePath(path.join(config.rootDir, config.logFilePath));
+    if (!path.isAbsolute(config.buildLogFilePath)) {
+      config.buildLogFilePath = normalizePath(path.join(config.rootDir, config.buildLogFilePath));
     }
-    config.logger.writeLogFilePath = config.logFilePath;
+    config.logger.buildLogFilePath = config.buildLogFilePath;
+
+    if (typeof config.graphLogFilePath !== 'string') {
+      config.graphLogFilePath = DEFAULT_GRAPH_LOG_FILE_NAME;
+    }
+    if (!path.isAbsolute(config.graphLogFilePath)) {
+      config.graphLogFilePath = normalizePath(path.join(config.rootDir, config.graphLogFilePath));
+    }
+    config.logger.graphLogFilePath = config.graphLogFilePath;
   }
 }
 
@@ -125,4 +133,5 @@ const DEFAULT_INDEX_HTML = 'index.html';
 const DEFAULT_DIST_DIR = 'dist';
 const DEFAULT_COLLECTION_DIR = 'collection';
 const DEFAULT_TYPES_DIR = 'types';
-const DEFAULT_LOG_FILE_NAME = 'stencil.log';
+const DEFAULT_BUILD_LOG_FILE_NAME = 'stencil-build.log';
+const DEFAULT_GRAPH_LOG_FILE_NAME = 'stencil-graph.log';

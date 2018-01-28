@@ -48,6 +48,7 @@ export class TestingLogger implements Logger {
   printDiagnostics(_diagnostics: Diagnostic[]) {
     /* */
   }
-  writeLogFilePath: string = null;
-  writeLogCommit(_: boolean) { /**/ }
+  buildLogFilePath: string = null;
+  graphLogFilePath: string = null;
+  writeLogs(_: boolean) { /**/ }
 }

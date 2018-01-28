@@ -5,6 +5,7 @@ export interface Config {
   buildAppCore?: boolean;
   buildDir?: string;
   buildEs5?: boolean;
+  buildLogFilePath?: string;
   bundles?: ConfigBundle[];
   collectionDir?: string;
   collections?: DependentCollection[];
@@ -22,12 +23,11 @@ export interface Config {
   generateWWW?: boolean;
   globalScript?: string;
   globalStyle?: string[];
+  graphLogFilePath?: string;
   hashedFileNameLength?: number;
   hashFileNames?: boolean;
   hydratedCssClass?: string;
   includeSrc?: string[];
-  writeLog?: boolean;
-  logFilePath?: string;
   logger?: d.Logger;
   logLevel?: 'error'|'warn'|'info'|'debug'|string;
   minifyCss?: boolean;
@@ -49,6 +49,7 @@ export interface Config {
   typesDir?: string;
   watch?: boolean;
   watchIgnoredRegex?: RegExp;
+  writeLog?: boolean;
   wwwDir?: string;
   wwwIndexHtml?: string;
 

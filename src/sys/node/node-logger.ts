@@ -7,8 +7,9 @@ import * as path from 'path';
 export class NodeLogger implements d.Logger {
   private _level = 'info';
   private chalk: Chalk;
-  writeLogFilePath: string = null;
   private writeLogQueue: string[] = [];
+  buildLogFilePath: string = null;
+  graphLogFilePath: string = null;
 
   constructor() {
     const sysUtil = require(path.join(__dirname, './sys-util.js'));
@@ -160,7 +161,7 @@ export class NodeLogger implements d.Logger {
   }
 
   private queueWriteLog(prefix: string, msg: any[]) {
-    if (this.writeLogFilePath) {
+    if (this.buildLogFilePath) {
       const d = new Date();
       const log = '' +
         ('0' + d.getHours()).slice(-2) + ':' +
@@ -177,13 +178,11 @@ export class NodeLogger implements d.Logger {
     }
   }
 
-  writeLogCommit(append: boolean, buildResults: d.BuildResults) {
-    try {
-      if (this.writeLogFilePath) {
-
+  writeLogs(append: boolean, buildResults: d.BuildResults) {
+    if (this.buildLogFilePath) {
+      try {
         if (buildResults) {
           this.queueWriteLog('F', [`files written: ${buildResults.filesWritten.length}`]);
-          this.queueWriteLog('F', [`compiled bundles: ${buildResults.bundles.length}\n` + JSON.stringify(buildResults.bundles, null, 2)]);
         }
 
         this.queueWriteLog('F', ['--------------------------------------']);
@@ -192,20 +191,32 @@ export class NodeLogger implements d.Logger {
 
         if (append) {
           try {
-            fs.accessSync(this.writeLogFilePath);
+            fs.accessSync(this.buildLogFilePath);
           } catch (e) {
             append = false;
           }
         }
 
         if (append) {
-          fs.appendFileSync(this.writeLogFilePath, log);
+          fs.appendFileSync(this.buildLogFilePath, log);
         } else {
-          fs.writeFileSync(this.writeLogFilePath, log);
+          fs.writeFileSync(this.buildLogFilePath, log);
         }
-      }
-    } catch (e) {
-      console.log(e);
+
+      } catch (e) {}
+    }
+
+    if (this.graphLogFilePath && buildResults) {
+      try {
+        const graph = {
+          compiler: buildResults.compiler,
+          bundleCount: buildResults.bundles.length,
+          bundles: buildResults.bundles
+        };
+
+        fs.writeFileSync(this.graphLogFilePath, JSON.stringify(graph, null, 2));
+
+      } catch (e) {}
     }
 
     this.writeLogQueue.length = 0;
