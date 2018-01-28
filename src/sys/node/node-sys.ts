@@ -1,5 +1,5 @@
 import { BuildEvents } from '../../compiler/events';
-import { Config, Diagnostic, FileSystem, Path, PackageJsonData, StencilSystem } from '../../util/interfaces';
+import { Config, Diagnostic, FileSystem, PackageJsonData, Path, StencilSystem } from '../../declarations';
 import { createContext, runInContext } from './node-context';
 import { createDom } from './node-dom';
 import { NodeFs } from './node-fs';

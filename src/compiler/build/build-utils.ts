@@ -62,7 +62,7 @@ export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watche
 
 
 function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
-  const buildResults = generateBuildResults(config, compilerCtx, buildCtx);
+  const buildResults = generateBuildResults(compilerCtx, buildCtx);
 
   // log any errors/warnings
   config.logger.printDiagnostics(buildResults.diagnostics);
@@ -99,6 +99,9 @@ function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCt
     (buildCtx as any)[k] = null;
   }
 
+  // write all of our logs to disk if config'd to do so
+  config.logger.writeLogCommit(compilerCtx.isRebuild, buildResults);
+
   // emit a build event, which happens for inital build and rebuilds
   compilerCtx.events.emit('build', buildResults);
 
@@ -111,29 +114,13 @@ function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCt
 }
 
 
-function generateBuildResults(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
+function generateBuildResults(compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
   // create the build results that get returned
   const buildResults: BuildResults = {
     buildId: buildCtx.buildId,
     diagnostics: cleanDiagnostics(buildCtx.diagnostics),
     hasError: hasError(buildCtx.diagnostics),
-    aborted: buildCtx.aborted
-  };
-
-  // only bother adding the buildStats config is enabled
-  // useful for testing/debugging
-  if (config.buildStats) {
-    generateBuildResultsStats(compilerCtx, buildCtx, buildResults);
-  }
-
-  return buildResults;
-}
-
-
-function generateBuildResultsStats(compilerCtx: CompilerCtx, buildCtx: BuildCtx, buildResults: BuildResults) {
-  // stuff on the right are internal property names
-  // stuff set on the left is public and should not be refactored
-  buildResults.stats = {
+    aborted: buildCtx.aborted,
     duration: Date.now() - buildCtx.startTime,
     isRebuild: compilerCtx.isRebuild,
     bundles: [],
@@ -160,8 +147,10 @@ function generateBuildResultsStats(compilerCtx: CompilerCtx, buildCtx: BuildCtx,
       buildEntry.modes = modes;
     }
 
-    buildResults.stats.bundles.push(buildEntry);
+    buildResults.bundles.push(buildEntry);
   });
+
+  return buildResults;
 }
 
 

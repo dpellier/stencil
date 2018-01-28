@@ -30,7 +30,7 @@ describe('validation', () => {
   describe('buildAppCore', () => {
 
     it('set buildAppCore true', () => {
-      config.buildStats = true;
+      config.buildAppCore = true;
       validateBuildConfig(config);
       expect(config.buildAppCore).toBe(true);
     });
@@ -48,23 +48,23 @@ describe('validation', () => {
 
   });
 
-  describe('buildStats', () => {
+  describe('writeLog', () => {
 
-    it('set buildStats true', () => {
-      config.buildStats = true;
+    it('set writeLog true', () => {
+      config.writeLog = true;
       validateBuildConfig(config);
-      expect(config.buildStats).toBe(true);
+      expect(config.writeLog).toBe(true);
     });
 
-    it('set buildStats false', () => {
-      config.buildStats = false;
+    it('set writeLog false', () => {
+      config.writeLog = false;
       validateBuildConfig(config);
-      expect(config.buildStats).toBe(false);
+      expect(config.writeLog).toBe(false);
     });
 
-    it('default buildStats false', () => {
+    it('default writeLog false', () => {
       validateBuildConfig(config);
-      expect(config.buildStats).toBe(false);
+      expect(config.writeLog).toBe(false);
     });
 
   });

@@ -1,4 +1,4 @@
-import { Config, Diagnostic, StencilSystem } from '../util/interfaces';
+import { Config, Diagnostic, StencilSystem } from '../declarations';
 import { normalizePath } from '../compiler/util';
 
 
@@ -8,6 +8,10 @@ export function overrideConfigFromArgv(config: Config, argv: CliArgv) {
 
   } else if (argv.dev) {
     config.devMode = true;
+  }
+
+  if (argv.log) {
+    config.writeLog = true;
   }
 
   if (argv.watch) {
@@ -122,6 +126,7 @@ export interface CliArgv {
   docs?: boolean;
   es5?: boolean;
   help?: boolean;
+  log?: boolean;
   logLevel?: string;
   prerender?: boolean;
   prod?: boolean;

@@ -31,8 +31,8 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
     config.logLevel = config.logger.level;
   }
 
-  if (typeof config.buildStats !== 'boolean') {
-    config.buildStats = false;
+  if (typeof config.writeLog !== 'boolean') {
+    config.writeLog = false;
   }
 
   if (typeof config.buildAppCore !== 'boolean') {
@@ -55,13 +55,12 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
     // if no config, minify css when it's the prod build
     config.minifyCss = (!config.devMode);
   }
-  config.logger.debug(`minifyCss: ${config.minifyCss}`);
 
   if (typeof config.minifyJs !== 'boolean') {
     // if no config, minify js when it's the prod build
     config.minifyJs = (!config.devMode);
   }
-  config.logger.debug(`minifyJs: ${config.minifyJs}`);
+  config.logger.debug(`minifyJs: ${config.minifyJs}, minifyCss: ${config.minifyCss}`);
 
   if (typeof config.hashFileNames !== 'boolean' && typeof (config as any).hashFilenames === 'boolean') {
     config.hashFileNames = (config as any).hashFilenames;
@@ -81,7 +80,6 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
       config.hashFileNames = true;
     }
   }
-  config.logger.debug(`hashFileNames: ${config.hashFileNames}`);
 
   if (typeof config.hashedFileNameLength !== 'number') {
     config.hashedFileNameLength = DEFAULT_HASHED_FILENAME_LENTH;
@@ -91,7 +89,7 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
       throw new Error(`config.hashedFileNameLength must be at least 4 characters`);
     }
   }
-  config.logger.debug(`hashedFileNameLength: ${config.hashedFileNameLength}`);
+  config.logger.debug(`hashFileNames: ${config.hashFileNames}, hashedFileNameLength: ${config.hashedFileNameLength}`);
 
   config.generateDistribution = !!config.generateDistribution;
 

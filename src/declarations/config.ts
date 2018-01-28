@@ -5,7 +5,6 @@ export interface Config {
   buildAppCore?: boolean;
   buildDir?: string;
   buildEs5?: boolean;
-  buildStats?: boolean;
   bundles?: ConfigBundle[];
   collectionDir?: string;
   collections?: DependentCollection[];
@@ -27,6 +26,8 @@ export interface Config {
   hashFileNames?: boolean;
   hydratedCssClass?: string;
   includeSrc?: string[];
+  writeLog?: boolean;
+  logFilePath?: string;
   logger?: d.Logger;
   logLevel?: 'error'|'warn'|'info'|'debug'|string;
   minifyCss?: boolean;

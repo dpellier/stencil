@@ -33,21 +33,19 @@ export interface BuildResults {
   diagnostics: d.Diagnostic[];
   hasError: boolean;
   aborted?: boolean;
-  stats?: {
-    bundles: BuildBundle[];
-    duration: number;
-    isRebuild: boolean;
-    filesWritten: string[];
-    transpileBuildCount: number;
-    bundleBuildCount: number;
-    hasChangedJsText: boolean;
-    dirsAdded: string[];
-    dirsDeleted: string[];
-    filesChanged: string[];
-    filesUpdated: string[];
-    filesAdded: string[];
-    filesDeleted: string[];
-  };
+  bundles: BuildBundle[];
+  duration: number;
+  isRebuild: boolean;
+  filesWritten: string[];
+  transpileBuildCount: number;
+  bundleBuildCount: number;
+  hasChangedJsText: boolean;
+  dirsAdded: string[];
+  dirsDeleted: string[];
+  filesChanged: string[];
+  filesUpdated: string[];
+  filesAdded: string[];
+  filesDeleted: string[];
 }
 
 

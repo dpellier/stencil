@@ -1,4 +1,4 @@
-import { Config } from '../../declarations/config';
+import { Config } from '../../declarations';
 import { normalizePath } from '../util';
 
 
@@ -106,6 +106,15 @@ export function validatePaths(config: Config) {
     config.publicPath += '/';
   }
 
+  if (config.writeLog) {
+    if (typeof config.logFilePath !== 'string') {
+      config.logFilePath = DEFAULT_LOG_FILE_NAME;
+    }
+    if (!path.isAbsolute(config.logFilePath)) {
+      config.logFilePath = normalizePath(path.join(config.rootDir, config.logFilePath));
+    }
+    config.logger.writeLogFilePath = config.logFilePath;
+  }
 }
 
 
@@ -116,3 +125,4 @@ const DEFAULT_INDEX_HTML = 'index.html';
 const DEFAULT_DIST_DIR = 'dist';
 const DEFAULT_COLLECTION_DIR = 'collection';
 const DEFAULT_TYPES_DIR = 'types';
+const DEFAULT_LOG_FILE_NAME = 'stencil.log';
