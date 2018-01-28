@@ -16,9 +16,9 @@ describe('processAppGraph', () => {
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(1);
     expect(g[0]).toEqual([
-      { tag: 'x', dependencyOf: ['#app', 'z'] },
-      { tag: 'y', dependencyOf: ['#app'] },
-      { tag: 'z', dependencyOf: ['#app', 'y'] }
+      { tag: 'x', dependencyOf: ['z'] },
+      { tag: 'y', dependencyOf: [] },
+      { tag: 'z', dependencyOf: ['y'] }
     ]);
   });
 
@@ -40,8 +40,8 @@ describe('processAppGraph', () => {
       { tag: 'w', dependencyOf: ['y', 'z'] },
       { tag: 'x', dependencyOf: ['y', 'z'] }
     ]);
-    expect(g[1]).toEqual([{ tag: 'y', dependencyOf: ['#app'] }]);
-    expect(g[2]).toEqual([{ tag: 'z', dependencyOf: ['#app'] }]);
+    expect(g[1]).toEqual([{ tag: 'y', dependencyOf: [] }]);
+    expect(g[2]).toEqual([{ tag: 'z', dependencyOf: [] }]);
   });
 
   it('random orders 1', () => {
@@ -63,8 +63,8 @@ describe('processAppGraph', () => {
       { tag: 'w', dependencyOf: ['y', 'z'] },
       { tag: 'x', dependencyOf: ['y', 'z'] }
     ]);
-    expect(g[1]).toEqual([{ tag: 'y', dependencyOf: ['#app'] }]);
-    expect(g[2]).toEqual([{ tag: 'z', dependencyOf: ['#app'] }]);
+    expect(g[1]).toEqual([{ tag: 'y', dependencyOf: [] }]);
+    expect(g[2]).toEqual([{ tag: 'z', dependencyOf: [] }]);
   });
 
   it('common c,d,e', () => {
@@ -80,8 +80,8 @@ describe('processAppGraph', () => {
     ];
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(3);
-    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: ['#app'] }]);
-    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: ['#app'] }]);
+    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: [] }]);
+    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: [] }]);
     expect(g[2]).toEqual([
       { tag: 'c', dependencyOf: ['a', 'b'] },
       { tag: 'd', dependencyOf: ['a', 'b'] },
@@ -102,9 +102,9 @@ describe('processAppGraph', () => {
     ];
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(3);
-    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: ['#app'] }]);
+    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: [] }]);
     expect(g[1]).toEqual([
-      { tag: 'b', dependencyOf: ['#app'] },
+      { tag: 'b', dependencyOf: [] },
       { tag: 'e', dependencyOf: ['b'] }
     ]);
     expect(g[2]).toEqual([
@@ -125,8 +125,8 @@ describe('processAppGraph', () => {
     ];
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(3);
-    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: ['#app'] }]);
-    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: ['#app'] }]);
+    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: [] }]);
+    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: [] }]);
     expect(g[2]).toEqual([
       { tag: 'c', dependencyOf: ['a', 'b'] },
       { tag: 'd', dependencyOf: ['a', 'b'] }
@@ -145,11 +145,11 @@ describe('processAppGraph', () => {
     ];
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(3);
-    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: ['#app'] }]);
-    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: ['#app'] }]);
+    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: [] }]);
+    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: [] }]);
     expect(g[2]).toEqual([
-      { tag: 'c', dependencyOf: ['#app', 'a', 'b'] },
-      { tag: 'd', dependencyOf: ['#app', 'a', 'b'] }
+      { tag: 'c', dependencyOf: ['a', 'b'] },
+      { tag: 'd', dependencyOf: ['a', 'b'] }
     ]);
   });
 
@@ -164,8 +164,8 @@ describe('processAppGraph', () => {
     ];
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(3);
-    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: ['#app'] }]);
-    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: ['#app'] }]);
+    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: [] }]);
+    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: [] }]);
     expect(g[2]).toEqual([{ tag: 'c', dependencyOf: ['a', 'b'] }]);
   });
 
@@ -181,9 +181,9 @@ describe('processAppGraph', () => {
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(1);
     expect(g[0]).toEqual([
-      { tag: 'a', dependencyOf: ['#app'] },
-      { tag: 'b', dependencyOf: ['#app', 'a'] },
-      { tag: 'c', dependencyOf: ['#app', 'b'] }
+      { tag: 'a', dependencyOf: [] },
+      { tag: 'b', dependencyOf: ['a'] },
+      { tag: 'c', dependencyOf: ['b'] }
     ]);
   });
 
@@ -201,8 +201,8 @@ describe('processAppGraph', () => {
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(1);
     expect(g[0]).toEqual([
-      { tag: 'a', dependencyOf: ['#app'] },
-      { tag: 'b', dependencyOf: ['#app', 'a'] }
+      { tag: 'a', dependencyOf: [] },
+      { tag: 'b', dependencyOf: ['a'] }
     ]);
   });
 
@@ -217,8 +217,8 @@ describe('processAppGraph', () => {
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(1);
     expect(g[0]).toEqual([
-      { tag: 'a', dependencyOf: ['#app'] },
-      { tag: 'b', dependencyOf: ['#app', 'a'] }
+      { tag: 'a', dependencyOf: [] },
+      { tag: 'b', dependencyOf: ['a'] }
     ]);
   });
 
@@ -233,9 +233,9 @@ describe('processAppGraph', () => {
     ];
     const g = processAppGraph(allModules, entryTags);
     expect(g).toHaveLength(3);
-    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: ['#app'] }]);
-    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: ['#app'] }]);
-    expect(g[2]).toEqual([{ tag: 'c', dependencyOf: ['#app'] }]);
+    expect(g[0]).toEqual([{ tag: 'a', dependencyOf: [] }]);
+    expect(g[1]).toEqual([{ tag: 'b', dependencyOf: [] }]);
+    expect(g[2]).toEqual([{ tag: 'c', dependencyOf: [] }]);
   });
 
 });

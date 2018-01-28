@@ -10,7 +10,6 @@ export class TestingConfig implements Config {
   rootDir = '/';
   suppressTypeScriptErrors = true;
   devMode = true;
-  writeLog = true;
   enableCache = false;
   buildAppCore = false;
 }

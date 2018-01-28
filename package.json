@@ -83,11 +83,12 @@
   "keywords": [
     "web components",
     "components",
-    "custom elements",
     "stencil",
     "ionic",
     "webapp",
-    "pwa"
+    "pwa",
+    "custom elements",
+    "shadow dom"
   ],
   "jest": {
     "testEnvironment": "node",
@@ -100,6 +101,6 @@
     "transform": {
       "^.+\\.(ts|tsx)$": "<rootDir>/scripts/jest.preprocessor.js"
     },
-    "testRegex": "src/compiler/entries/test/app-graph.spec.ts"
+    "testRegex": "/src/.*\\.spec\\.(ts|tsx|js)$"
   }
 }

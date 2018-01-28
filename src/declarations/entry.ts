@@ -15,5 +15,5 @@ export type EntryPoint = EntryComponent[];
 
 export interface EntryComponent {
   tag: string;
-  dependencyOf: string[];
+  dependencyOf?: string[];
 }

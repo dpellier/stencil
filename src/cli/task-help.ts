@@ -9,13 +9,14 @@ export function help(process: NodeJS.Process, logger: Logger) {
 
     ${p} ${logger.green('stencil build [--dev] [--watch] [--prerender] [--debug]')}
 
-      ${logger.green('--dev')} ${logger.dim('..................')} Execute a development build.
-      ${logger.green('--watch')} ${logger.dim('................')} Execute a build in watch mode.
-      ${logger.green('--prerender')} ${logger.dim('............')} Prerender URLs.
-      ${logger.green('--debug')} ${logger.dim('................')} Set the log level to debug.
-      ${logger.green('--log')} ${logger.dim('..................')} Write stencil log file.
-      ${logger.green('--config')} ${logger.dim('...............')} Stencil config file.
+      ${logger.green('--dev')} ${logger.dim('..................')} Execute a development build
+      ${logger.green('--watch')} ${logger.dim('................')} Execute a build in watch mode
+      ${logger.green('--prerender')} ${logger.dim('............')} Prerender URLs
+      ${logger.green('--graph')} ${logger.dim('................')} Write stencil-graph.json file
+      ${logger.green('--log')} ${logger.dim('..................')} Write stencil-build.log file
+      ${logger.green('--config')} ${logger.dim('...............')} Set stencil config file
       ${logger.green('--docs')} ${logger.dim('.................')} Generate readme.md docs for each component
+      ${logger.green('--debug')} ${logger.dim('................')} Set the log level to debug
 
   ${logger.bold('Examples:')}
 

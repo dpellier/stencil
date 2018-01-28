@@ -1,7 +1,6 @@
-import { Config } from '../../../util/interfaces';
+import { Config } from '../../../declarations';
 import { mockLogger, mockStencilSystem } from '../../../testing/mocks';
 import { setProcessEnvironment, validateBuildConfig } from '../validate-config';
-import * as path from 'path';
 
 
 describe('validation', () => {
@@ -44,6 +43,27 @@ describe('validation', () => {
     it('default buildAppCore true', () => {
       validateBuildConfig(config);
       expect(config.buildAppCore).toBe(true);
+    });
+
+  });
+
+  describe('writeGraph', () => {
+
+    it('set writeGraph true', () => {
+      config.writeGraph = true;
+      validateBuildConfig(config);
+      expect(config.writeGraph).toBe(true);
+    });
+
+    it('set writeGraph false', () => {
+      config.writeGraph = false;
+      validateBuildConfig(config);
+      expect(config.writeGraph).toBe(false);
+    });
+
+    it('default writeGraph false', () => {
+      validateBuildConfig(config);
+      expect(config.writeGraph).toBe(false);
     });
 
   });

@@ -78,9 +78,6 @@ export function processAppGraph(allModules: ModuleFile[], entryTags: string[]) {
 
   entryPoints.forEach(entryPoint => {
     entryPoint.forEach(entryCmp => {
-      if (entryTags.includes(entryCmp.tag)) {
-        entryCmp.dependencyOf.push('#app');
-      }
       entryCmp.dependencyOf.sort();
     });
 

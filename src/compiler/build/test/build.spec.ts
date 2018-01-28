@@ -39,25 +39,25 @@ describe('build', () => {
 
     const r = await c.build();
     expect(r.diagnostics).toEqual([]);
-    expect(r.stats.bundles).toHaveLength(1);
-    expect(r.stats.bundles[0].tags[0]).toContain('cmp-a');
-    expect(r.stats.transpileBuildCount).toBe(1);
-    expect(r.stats.bundleBuildCount).toBe(1);
+    expect(r.bundles).toHaveLength(1);
+    expect(r.bundles[0].components[0]).toContain('cmp-a');
+    expect(r.transpileBuildCount).toBe(1);
+    expect(r.bundleBuildCount).toBe(1);
 
     expectFilesWritten(r,
       '/src/components.d.ts',
       '/www/build/app/cmp-a.js',
       '/www/index.html'
     );
-    expect(r.stats.filesWritten.length).toBe(3);
+    expect(r.filesWritten.length).toBe(3);
   });
 
   it('should build no components', async () => {
     const r = await c.build();
     expect(r.diagnostics).toEqual([]);
-    expect(r.stats.bundles).toHaveLength(0);
-    expect(r.stats.transpileBuildCount).toBe(0);
-    expect(r.stats.bundleBuildCount).toBe(0);
+    expect(r.bundles).toHaveLength(0);
+    expect(r.transpileBuildCount).toBe(0);
+    expect(r.bundleBuildCount).toBe(0);
   });
 
 

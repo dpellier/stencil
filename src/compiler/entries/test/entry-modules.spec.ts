@@ -1,4 +1,4 @@
-import { ConfigBundle, EntryModule, ModuleFile } from '../../../declarations';
+import { ConfigBundle, EntryModule, EntryPoint, ModuleFile } from '../../../declarations';
 import { entryRequiresScopedStyles, getAppEntryTags, getEntryEncapsulations, getEntryModes,
   getUserConfigEntryTags, regroupEntryModules } from '../entry-modules';
 import { ENCAPSULATION } from '../../../util/constants';
@@ -156,11 +156,11 @@ describe('graph-dependencies', () => {
         { cmpMeta: { tagNameMeta: 'cmp-d', encapsulation: ENCAPSULATION.ShadowDom } },
       ];
 
-      const entryModulesTags = [
-        ['cmp-a', 'cmp-b', 'cmp-c', 'cmp-d']
+      const entryPoints: EntryPoint[] = [
+        [ { tag: 'cmp-a' }, { tag: 'cmp-b' }, { tag: 'cmp-c' }, { tag: 'cmp-d' } ]
       ];
 
-      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      const entryModules = regroupEntryModules(allModules, entryPoints);
       expect(entryModules).toHaveLength(3);
       expect(entryModules[0]).toHaveLength(1);
       expect(entryModules[0][0].cmpMeta.tagNameMeta).toBe('cmp-a');
@@ -179,11 +179,11 @@ describe('graph-dependencies', () => {
         { cmpMeta: { tagNameMeta: 'cmp-d', encapsulation: ENCAPSULATION.ShadowDom } },
       ];
 
-      const entryModulesTags = [
-        ['cmp-a', 'cmp-b', 'cmp-c', 'cmp-d']
+      const entryPoints: EntryPoint[] = [
+        [ { tag: 'cmp-a' }, { tag: 'cmp-b' }, { tag: 'cmp-c' }, { tag: 'cmp-d' } ]
       ];
 
-      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      const entryModules = regroupEntryModules(allModules, entryPoints);
       expect(entryModules).toHaveLength(3);
       expect(entryModules[0]).toHaveLength(1);
       expect(entryModules[0][0].cmpMeta.tagNameMeta).toBe('cmp-a');
@@ -202,11 +202,11 @@ describe('graph-dependencies', () => {
         { cmpMeta: { tagNameMeta: 'cmp-d', encapsulation: ENCAPSULATION.ShadowDom } },
       ];
 
-      const entryModulesTags = [
-        ['cmp-a', 'cmp-b', 'cmp-c', 'cmp-d']
+      const entryPoints: EntryPoint[] = [
+        [ { tag: 'cmp-a' }, { tag: 'cmp-b' }, { tag: 'cmp-c' }, { tag: 'cmp-d' } ]
       ];
 
-      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      const entryModules = regroupEntryModules(allModules, entryPoints);
       expect(entryModules).toHaveLength(3);
       expect(entryModules[0]).toHaveLength(2);
       expect(entryModules[0][0].cmpMeta.tagNameMeta).toBe('cmp-a');
@@ -224,11 +224,11 @@ describe('graph-dependencies', () => {
         { cmpMeta: { tagNameMeta: 'cmp-c', encapsulation: ENCAPSULATION.ShadowDom } },
       ];
 
-      const entryModulesTags = [
-        ['cmp-a', 'cmp-b', 'cmp-c']
+      const entryPoints: EntryPoint[] = [
+        [ { tag: 'cmp-a' }, { tag: 'cmp-b' }, { tag: 'cmp-c' } ]
       ];
 
-      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      const entryModules = regroupEntryModules(allModules, entryPoints);
       expect(entryModules).toHaveLength(3);
       expect(entryModules[0]).toHaveLength(1);
       expect(entryModules[1]).toHaveLength(1);
@@ -240,10 +240,10 @@ describe('graph-dependencies', () => {
         { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.ShadowDom } },
         { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.ShadowDom } },
       ];
-      const entryModulesTags = [
-        ['cmp-a', 'cmp-b']
+      const entryPoints: EntryPoint[] = [
+        [ { tag: 'cmp-a' }, { tag: 'cmp-b' } ]
       ];
-      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      const entryModules = regroupEntryModules(allModules, entryPoints);
       expect(entryModules).toHaveLength(1);
       expect(entryModules[0]).toHaveLength(2);
     });
@@ -253,10 +253,10 @@ describe('graph-dependencies', () => {
         { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.ScopedCss } },
         { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.ScopedCss } },
       ];
-      const entryModulesTags = [
-        ['cmp-a', 'cmp-b']
+      const entryPoints: EntryPoint[] = [
+        [ { tag: 'cmp-a' }, { tag: 'cmp-b' } ]
       ];
-      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      const entryModules = regroupEntryModules(allModules, entryPoints);
       expect(entryModules).toHaveLength(1);
       expect(entryModules[0]).toHaveLength(2);
     });
@@ -266,10 +266,10 @@ describe('graph-dependencies', () => {
         { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.NoEncapsulation } },
         { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.NoEncapsulation } },
       ];
-      const entryModulesTags = [
-        ['cmp-a', 'cmp-b']
+      const entryPoints: EntryPoint[] = [
+        [ { tag: 'cmp-a' }, { tag: 'cmp-b' } ]
       ];
-      const entryModules = regroupEntryModules(allModules, entryModulesTags);
+      const entryModules = regroupEntryModules(allModules, entryPoints);
       expect(entryModules).toHaveLength(1);
       expect(entryModules[0]).toHaveLength(2);
     });

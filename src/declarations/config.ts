@@ -49,6 +49,7 @@ export interface Config {
   typesDir?: string;
   watch?: boolean;
   watchIgnoredRegex?: RegExp;
+  writeGraph?: boolean;
   writeLog?: boolean;
   wwwDir?: string;
   wwwIndexHtml?: string;

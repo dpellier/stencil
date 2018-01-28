@@ -1,4 +1,4 @@
-import { BuildBundle, BuildCtx, BuildResults, CompilerCtx, Config, WatcherResults, BuildEntry } from '../../declarations';
+import { BuildBundle, BuildCtx, BuildEntry, BuildResults, CompilerCtx, Config, WatcherResults } from '../../declarations';
 import { catchError, hasError, pathJoin } from '../util';
 import { cleanDiagnostics } from '../../util/logger/logger-util';
 import { initWatcher } from '../watcher/watcher-init';

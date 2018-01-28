@@ -10,6 +10,10 @@ export function overrideConfigFromArgv(config: Config, argv: CliArgv) {
     config.devMode = true;
   }
 
+  if (argv.graph) {
+    config.writeGraph = true;
+  }
+
   if (argv.log) {
     config.writeLog = true;
   }
@@ -99,7 +103,9 @@ const ARG_OPTS: any = {
     'dev',
     'docs',
     'es5',
+    'graph',
     'help',
+    'log',
     'prod',
     'prerender',
     'service-worker',
@@ -125,6 +131,7 @@ export interface CliArgv {
   dev?: boolean;
   docs?: boolean;
   es5?: boolean;
+  graph?: boolean;
   help?: boolean;
   log?: boolean;
   logLevel?: string;
@@ -140,7 +147,7 @@ function getCmdArgs(process: NodeJS.Process) {
   let cmdArgs = process.argv.slice(2);
 
   try {
-    var npmRunArgs = process.env.npm_config_argv;
+    const npmRunArgs = process.env.npm_config_argv;
     if (npmRunArgs) {
       cmdArgs = cmdArgs.concat(JSON.parse(npmRunArgs).original);
     }
