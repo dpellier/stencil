@@ -35,15 +35,13 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     await emptyDestDir(config, compilerCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
-    // begin the build
+    // load colleciton data from all the dependent collections
+    await loadCollectionModules(config, compilerCtx, buildCtx);
+    if (buildCtx.shouldAbort()) return buildCtx.finish();
+
     // async scan the src directory for ts files
     // then transpile them all in one go
     await transpileAppModules(config, compilerCtx, buildCtx);
-    if (buildCtx.shouldAbort()) return buildCtx.finish();
-
-    // generation the app manifest from the compiled module file results
-    // and from all the dependent collections
-    await loadCollectionModules(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // we've got the compiler context filled with app modules and collection dependency modules
