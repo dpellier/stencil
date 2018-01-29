@@ -64,9 +64,7 @@ export interface BuildStats {
 
 export interface BuildBundle {
   components: BuildComponent[];
-  output: {
-    filePath: string;
-  }[];
+  output: d.EntryBundle[];
   input: {
     filePath: string;
   }[];

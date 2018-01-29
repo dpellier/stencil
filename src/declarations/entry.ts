@@ -8,7 +8,17 @@ export interface EntryModule {
   compiledModuleLegacyJsText?: string;
   requiresScopedStyles?: boolean;
   modeNames?: string[];
-  outputFileNames?: string[];
+  entryBundles?: EntryBundle[];
+}
+
+export interface EntryBundle {
+  fileName?: string;
+  outputs?: {
+    filePath?: string;
+  }[];
+  modeName?: string;
+  scopedStyles?: boolean;
+  target?: string;
 }
 
 export type EntryPoint = EntryComponent[];

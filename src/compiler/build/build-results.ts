@@ -28,20 +28,26 @@ export function generateBuildResults(config: Config, compilerCtx: CompilerCtx, b
 
     bundles: buildCtx.entryModules.map(en => {
       const buildEntry: BuildBundle = {
+
         components: (en.moduleFiles || []).map(m => {
           return {
-            tag: m.cmpMeta.tagNameMeta
+            tag: m.cmpMeta.tagNameMeta,
+            dependencies: m.cmpMeta.dependencies.slice()
           };
         }),
 
-        output: (en.outputFileNames || []).map(outputFileName => {
+        output: (en.entryBundles || []).map(entryBundle => {
           return {
-            filePath: pathJoin(config, config.sys.path.relative(config.rootDir, outputFileName))
+            fileName: entryBundle.fileName,
+            outputs: entryBundle.outputs.map(o => {
+              return {
+                filePath: pathJoin(config, config.sys.path.relative(config.rootDir, o.filePath))
+              };
+            }),
+            modeName: entryBundle.modeName,
+            scopedStyles: entryBundle.scopedStyles,
+            target: entryBundle.target
           };
-        }).sort((a, b) => {
-          if (a.filePath < b.filePath) return -1;
-          if (a.filePath > b.filePath) return 1;
-          return 0;
         }),
 
         input: (en.moduleFiles || []).map(m => {
