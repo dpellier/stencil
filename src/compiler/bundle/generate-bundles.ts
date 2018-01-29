@@ -116,7 +116,7 @@ async function generateBundleBuild(config: Config, compilerCtx: CompilerCtx, ent
 
   const entryBundle: EntryBundle = {
     fileName: fileName,
-    size: jsText.length,
+    text: jsText,
     outputs: [],
     modeName: modeName,
     sourceTarget: sourceTarget,

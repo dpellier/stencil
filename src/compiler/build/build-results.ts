@@ -1,4 +1,4 @@
-import { BuildBundle, BuildCtx, BuildEntry, BuildResults, BuildStats, CompilerCtx, Config } from '../../declarations';
+import { BuildBundle, BuildComponent, BuildCtx, BuildEntry, BuildResults, BuildStats, CompilerCtx, Config } from '../../declarations';
 import { cleanDiagnostics } from '../../util/logger/logger-util';
 import { DEFAULT_STYLE_MODE, ENCAPSULATION } from '../../util/constants';
 import { hasError, pathJoin } from '../util';
@@ -30,17 +30,24 @@ export function generateBuildResults(config: Config, compilerCtx: CompilerCtx, b
       const buildEntry: BuildEntry = {
         entryId: en.entryKey,
 
-        components: (en.moduleFiles || []).map(m => {
-          return {
+        components: en.moduleFiles.map(m => {
+          const buildCmp: BuildComponent = {
             tag: m.cmpMeta.tagNameMeta,
-            dependencies: m.cmpMeta.dependencies.slice()
+            dependencies: m.cmpMeta.dependencies.slice(),
+            dependencyOf: en.moduleFiles.reduce((dependencyOf, otherModule) => {
+              if (otherModule.cmpMeta.dependencies.includes(m.cmpMeta.tagNameMeta)) {
+                dependencyOf.push(otherModule.cmpMeta.tagNameMeta);
+              }
+              return dependencyOf;
+            }, [] as string[]).sort()
           };
+          return buildCmp;
         }),
 
-        bundles: (en.entryBundles || []).map(entryBundle => {
+        bundles: en.entryBundles.map(entryBundle => {
           const buildBundle: BuildBundle = {
             fileName: entryBundle.fileName,
-            size: entryBundle.size,
+            size: entryBundle.text.length,
             outputs: entryBundle.outputs.map(filePath => {
               return pathJoin(config, config.sys.path.relative(config.rootDir, filePath));
             })
@@ -57,7 +64,7 @@ export function generateBuildResults(config: Config, compilerCtx: CompilerCtx, b
           return buildBundle;
         }),
 
-        input: (en.moduleFiles || []).map(m => {
+        input: en.moduleFiles.map(m => {
           return {
             filePath: pathJoin(config, config.sys.path.relative(config.rootDir, m.jsFilePath))
           };
@@ -87,13 +94,8 @@ export function generateBuildResults(config: Config, compilerCtx: CompilerCtx, b
     })
   };
 
-  buildCtx.entryModules.forEach(entryModule => {
-    entryModule.moduleFiles.forEach(m => {
-      buildResults.components.push({
-        tag: m.cmpMeta.tagNameMeta,
-        dependencies: m.cmpMeta.dependencies.slice()
-      });
-    });
+  buildResults.entries.forEach(en => {
+    buildResults.components.push(...en.components);
   });
 
   return buildResults;

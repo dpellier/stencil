@@ -13,7 +13,7 @@ export interface EntryModule {
 
 export interface EntryBundle {
   fileName: string;
-  size: number;
+  text: string;
   outputs: string[];
   modeName: string;
   isScopedStyles: boolean;
