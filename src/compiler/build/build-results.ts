@@ -1,6 +1,6 @@
-import { BuildBundle, BuildComponent, BuildCtx, BuildResults, BuildStats, CompilerCtx, Config } from '../../declarations';
+import { BuildBundle, BuildCtx, BuildEntry, BuildResults, BuildStats, CompilerCtx, Config } from '../../declarations';
 import { cleanDiagnostics } from '../../util/logger/logger-util';
-import { DEFAULT_STYLE_MODE } from '../../util/constants';
+import { DEFAULT_STYLE_MODE, ENCAPSULATION } from '../../util/constants';
 import { hasError, pathJoin } from '../util';
 
 
@@ -26,8 +26,9 @@ export function generateBuildResults(config: Config, compilerCtx: CompilerCtx, b
 
     components: [],
 
-    bundles: buildCtx.entryModules.map(en => {
-      const buildEntry: BuildBundle = {
+    entries: buildCtx.entryModules.map(en => {
+      const buildEntry: BuildEntry = {
+        entryId: en.entryKey,
 
         components: (en.moduleFiles || []).map(m => {
           return {
@@ -36,18 +37,24 @@ export function generateBuildResults(config: Config, compilerCtx: CompilerCtx, b
           };
         }),
 
-        output: (en.entryBundles || []).map(entryBundle => {
-          return {
+        bundles: (en.entryBundles || []).map(entryBundle => {
+          const buildBundle: BuildBundle = {
             fileName: entryBundle.fileName,
-            outputs: entryBundle.outputs.map(o => {
-              return {
-                filePath: pathJoin(config, config.sys.path.relative(config.rootDir, o.filePath))
-              };
-            }),
-            modeName: entryBundle.modeName,
-            scopedStyles: entryBundle.scopedStyles,
-            target: entryBundle.target
+            size: entryBundle.size,
+            outputs: entryBundle.outputs.map(filePath => {
+              return pathJoin(config, config.sys.path.relative(config.rootDir, filePath));
+            })
           };
+          if (typeof entryBundle.sourceTarget === 'string') {
+            buildBundle.target = entryBundle.sourceTarget;
+          }
+          if (entryBundle.modeName !== DEFAULT_STYLE_MODE) {
+            buildBundle.mode = entryBundle.modeName;
+          }
+          if (entryBundle.isScopedStyles) {
+            buildBundle.scopedStyles = entryBundle.isScopedStyles;
+          }
+          return buildBundle;
         }),
 
         input: (en.moduleFiles || []).map(m => {
@@ -58,13 +65,23 @@ export function generateBuildResults(config: Config, compilerCtx: CompilerCtx, b
           if (a.filePath < b.filePath) return -1;
           if (a.filePath > b.filePath) return 1;
           return 0;
-        })
+        }),
+
+        encapsulations: []
       };
 
       const modes = en.modeNames.slice();
       if (modes.length > 1 || (modes.length === 1 && modes[0] !== DEFAULT_STYLE_MODE)) {
         buildEntry.modes = modes.sort();
       }
+
+      en.moduleFiles.forEach(m => {
+        const encap = m.cmpMeta.encapsulation === ENCAPSULATION.ScopedCss ? 'scoped' : m.cmpMeta.encapsulation === ENCAPSULATION.ShadowDom ? 'shadow' : 'none';
+        if (!buildEntry.encapsulations.includes(encap)) {
+          buildEntry.encapsulations.push(encap);
+        }
+      });
+      buildEntry.encapsulations.sort();
 
       return buildEntry;
     })
@@ -93,50 +110,43 @@ export async function generateBuildStats(config: Config, compilerCtx: CompilerCt
 
     if (buildResults.hasError) {
       jsonData = {
-        errors: buildResults.diagnostics
+        diagnostics: buildResults.diagnostics
       };
 
     } else {
-      jsonData = createStatsJson(config, buildCtx, buildResults);
+      const stats: BuildStats = {
+        compiler: {
+          name: config.sys.compiler.name,
+          version: config.sys.compiler.version
+        },
+        app: {
+          namespace: config.namespace,
+          fsNamespace: config.fsNamespace,
+          components: buildResults.components.length,
+          entries: buildResults.entries.length,
+          bundles: buildResults.entries.reduce((total, en) => {
+            total += en.bundles.length;
+            return total;
+          }, 0)
+        },
+        options: {
+          generateWWW: config.generateWWW,
+          generateDistribution: config.generateDistribution,
+          minifyJs: config.minifyJs,
+          minifyCss: config.minifyCss,
+          hashFileNames: config.hashFileNames,
+          hashedFileNameLength: config.hashedFileNameLength,
+          buildEs5: config.buildEs5
+        },
+        components: buildResults.components,
+        entries: buildResults.entries
+      };
+
+      jsonData = stats;
     }
 
     await compilerCtx.fs.writeFile(config.buildStatsFilePath, JSON.stringify(jsonData, null, 2));
     await compilerCtx.fs.commit();
 
   } catch (e) {}
-}
-
-
-function createStatsJson(config: Config, buildCtx: BuildCtx, buildResults: BuildResults) {
-  const stats: BuildStats = {
-    compiler: {
-      name: config.sys.compiler.name,
-      version: config.sys.compiler.version
-    },
-
-    components: buildResults.components,
-
-    entries: buildCtx.entryPoints.map(ep => {
-      return ep.map(ec => {
-        const buildCmp: BuildComponent = {
-          tag: ec.tag,
-          dependencyOf: ec.dependencyOf.slice().sort()
-        };
-        return buildCmp;
-      }).sort((a, b) => {
-        if (a.tag < b.tag) return -1;
-        if (a.tag > b.tag) return 1;
-        return 0;
-      });
-    }).sort((a, b) => {
-      if (a[0].tag < b[0].tag) return -1;
-      if (a[0].tag > b[0].tag) return 1;
-      return 0;
-    }),
-
-    bundles: buildResults.bundles
-
-  };
-
-  return stats;
 }

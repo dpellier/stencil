@@ -46,8 +46,8 @@ export interface BuildResults {
   filesUpdated: string[];
   filesAdded: string[];
   filesDeleted: string[];
-  bundles: BuildBundle[];
   components: BuildComponent[];
+  entries: BuildEntry[];
 }
 
 
@@ -56,19 +56,46 @@ export interface BuildStats {
     name: string;
     version: string;
   };
+  app: {
+    namespace: string;
+    fsNamespace: string;
+    components: number;
+    entries: number;
+    bundles: number;
+  };
+  options: {
+    generateWWW: boolean;
+    generateDistribution: boolean;
+    minifyJs: boolean;
+    minifyCss: boolean;
+    hashFileNames: boolean;
+    hashedFileNameLength: number;
+    buildEs5: boolean;
+  };
   components: BuildComponent[];
-  bundles: BuildBundle[];
-  entries: BuildComponent[][];
+  entries: BuildEntry[];
 }
 
 
-export interface BuildBundle {
+export interface BuildEntry {
+  entryId: string;
   components: BuildComponent[];
-  output: d.EntryBundle[];
+  bundles: BuildBundle[];
   input: {
     filePath: string;
   }[];
   modes?: string[];
+  encapsulations: string[];
+}
+
+
+export interface BuildBundle {
+  fileName: string;
+  size: number;
+  outputs: string[];
+  mode?: string;
+  scopedStyles?: boolean;
+  target?: string;
 }
 
 

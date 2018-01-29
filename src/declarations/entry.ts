@@ -12,13 +12,12 @@ export interface EntryModule {
 }
 
 export interface EntryBundle {
-  fileName?: string;
-  outputs?: {
-    filePath?: string;
-  }[];
-  modeName?: string;
-  scopedStyles?: boolean;
-  target?: string;
+  fileName: string;
+  size: number;
+  outputs: string[];
+  modeName: string;
+  isScopedStyles: boolean;
+  sourceTarget: string;
 }
 
 export type EntryPoint = EntryComponent[];

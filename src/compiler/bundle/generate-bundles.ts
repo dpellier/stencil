@@ -104,26 +104,6 @@ async function generateBundleBuild(config: Config, compilerCtx: CompilerCtx, ent
   // create the file name
   const fileName = getBundleFilename(bundleId, isScopedStyles, sourceTarget);
 
-  const entryBundle: EntryBundle = {
-    fileName: fileName,
-    outputs: []
-  };
-
-  if (modeName !== DEFAULT_STYLE_MODE) {
-    entryBundle.modeName = modeName;
-  }
-
-  if (sourceTarget === 'es5') {
-    entryBundle.target = sourceTarget;
-  }
-
-  if (isScopedStyles) {
-    entryBundle.scopedStyles = !!isScopedStyles;
-  }
-
-  entryModule.entryBundles = entryModule.entryBundles || [];
-  entryModule.entryBundles.push(entryBundle);
-
   // get the absolute path to where it'll be saved in www
   const wwwBuildPath = pathJoin(config, getAppWWWBuildDir(config), fileName);
 
@@ -134,20 +114,28 @@ async function generateBundleBuild(config: Config, compilerCtx: CompilerCtx, ent
   // this is used by jsonp callbacks to know which bundle loaded
   jsText = replaceBundleIdPlaceholder(jsText, bundleId);
 
+  const entryBundle: EntryBundle = {
+    fileName: fileName,
+    size: jsText.length,
+    outputs: [],
+    modeName: modeName,
+    sourceTarget: sourceTarget,
+    isScopedStyles: isScopedStyles
+  };
+
+  entryModule.entryBundles = entryModule.entryBundles || [];
+  entryModule.entryBundles.push(entryBundle);
+
   if (config.generateWWW) {
     // write to the www build
     await compilerCtx.fs.writeFile(wwwBuildPath, jsText);
-    entryBundle.outputs.push({
-      filePath: wwwBuildPath
-    });
+    entryBundle.outputs.push(wwwBuildPath);
   }
 
   if (config.generateDistribution) {
     // write to the dist build
     await compilerCtx.fs.writeFile(distPath, jsText);
-    entryBundle.outputs.push({
-      filePath: distPath
-    });
+    entryBundle.outputs.push(distPath);
   }
 }
 

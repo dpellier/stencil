@@ -32,8 +32,6 @@ export interface Config {
   logLevel?: 'error'|'warn'|'info'|'debug'|string;
   minifyCss?: boolean;
   minifyJs?: boolean;
-  maxComponentsPerBundle?: number;
-  minComponentsPerBundle?: number;
   namespace?: string;
   plugins?: d.Plugin[];
   preamble?: string;
