@@ -12,7 +12,7 @@ export function help(process: NodeJS.Process, logger: Logger) {
       ${logger.green('--dev')} ${logger.dim('..................')} Execute a development build
       ${logger.green('--watch')} ${logger.dim('................')} Execute a build in watch mode
       ${logger.green('--prerender')} ${logger.dim('............')} Prerender URLs
-      ${logger.green('--graph')} ${logger.dim('................')} Write stencil-graph.json file
+      ${logger.green('--stats')} ${logger.dim('................')} Write stencil-stats.json file
       ${logger.green('--log')} ${logger.dim('..................')} Write stencil-build.log file
       ${logger.green('--config')} ${logger.dim('...............')} Set stencil config file
       ${logger.green('--docs')} ${logger.dim('.................')} Generate readme.md docs for each component

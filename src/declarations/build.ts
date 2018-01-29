@@ -25,45 +25,57 @@ export interface BuildCtx {
   filesUpdated: string[];
   filesAdded: string[];
   shouldAbort?(): boolean;
-  finish?(): BuildResults;
+  finish?(): Promise<BuildResults>;
 }
 
 
 export interface BuildResults {
   buildId: number;
-  compiler: string;
   diagnostics: d.Diagnostic[];
   hasError: boolean;
   aborted?: boolean;
   duration: number;
   isRebuild: boolean;
-  filesWritten: string[];
   transpileBuildCount: number;
   bundleBuildCount: number;
   hasChangedJsText: boolean;
   dirsAdded: string[];
   dirsDeleted: string[];
+  filesWritten: string[];
   filesChanged: string[];
   filesUpdated: string[];
   filesAdded: string[];
   filesDeleted: string[];
+}
+
+
+export interface BuildStats {
+  compiler: {
+    name: string;
+    version: string;
+  };
   bundles: BuildBundle[];
-  entries: BuildEntry[];
+  entries: BuildComponent[][];
 }
 
 
 export interface BuildBundle {
   components: string[];
-  outputFiles: string[];
-  inputFiles: string[];
+  outputFiles: {
+    filePath: string;
+  }[];
+  inputFiles: {
+    filePath: string;
+  }[];
   modes?: string[];
 }
 
 
-export interface BuildEntry {
+export interface BuildComponent {
   tag: string;
   dependencyOf: string[];
 }
+
 
 export interface BuildConditionals {
   coreId?: 'core' | 'core.pf';

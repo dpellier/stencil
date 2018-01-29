@@ -6,6 +6,7 @@ export interface Config {
   buildDir?: string;
   buildEs5?: boolean;
   buildLogFilePath?: string;
+  buildStatsFilePath?: string;
   bundles?: ConfigBundle[];
   collectionDir?: string;
   collections?: DependentCollection[];
@@ -23,7 +24,6 @@ export interface Config {
   generateWWW?: boolean;
   globalScript?: string;
   globalStyle?: string[];
-  graphLogFilePath?: string;
   hashedFileNameLength?: number;
   hashFileNames?: boolean;
   hydratedCssClass?: string;
@@ -49,8 +49,8 @@ export interface Config {
   typesDir?: string;
   watch?: boolean;
   watchIgnoredRegex?: RegExp;
-  writeGraph?: boolean;
   writeLog?: boolean;
+  writeStats?: boolean;
   wwwDir?: string;
   wwwIndexHtml?: string;
 

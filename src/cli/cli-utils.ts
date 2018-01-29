@@ -10,8 +10,8 @@ export function overrideConfigFromArgv(config: Config, argv: CliArgv) {
     config.devMode = true;
   }
 
-  if (argv.graph) {
-    config.writeGraph = true;
+  if (argv.stats) {
+    config.writeStats = true;
   }
 
   if (argv.log) {
@@ -103,13 +103,13 @@ const ARG_OPTS: any = {
     'dev',
     'docs',
     'es5',
-    'graph',
     'help',
     'log',
     'prod',
     'prerender',
     'service-worker',
     'skip-node-check',
+    'stats',
     'version',
     'watch'
   ],
@@ -131,13 +131,13 @@ export interface CliArgv {
   dev?: boolean;
   docs?: boolean;
   es5?: boolean;
-  graph?: boolean;
   help?: boolean;
   log?: boolean;
   logLevel?: string;
   prerender?: boolean;
   prod?: boolean;
   serviceWorker?: boolean;
+  stats?: boolean;
   version?: boolean;
   watch?: boolean;
 }

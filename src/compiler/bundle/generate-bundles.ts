@@ -105,7 +105,6 @@ async function generateBundleBuild(config: Config, compilerCtx: CompilerCtx, ent
   const fileName = getBundleFilename(bundleId, isScopedStyles, sourceTarget);
 
   entryModule.outputFileNames = entryModule.outputFileNames || [];
-  entryModule.outputFileNames.push(fileName);
 
   // get the absolute path to where it'll be saved in www
   const wwwBuildPath = pathJoin(config, getAppWWWBuildDir(config), fileName);
@@ -120,11 +119,13 @@ async function generateBundleBuild(config: Config, compilerCtx: CompilerCtx, ent
   if (config.generateWWW) {
     // write to the www build
     await compilerCtx.fs.writeFile(wwwBuildPath, jsText);
+    entryModule.outputFileNames.push(wwwBuildPath);
   }
 
   if (config.generateDistribution) {
     // write to the dist build
     await compilerCtx.fs.writeFile(distPath, jsText);
+    entryModule.outputFileNames.push(distPath);
   }
 }
 

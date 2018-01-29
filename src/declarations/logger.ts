@@ -19,8 +19,7 @@ export interface Logger {
   bold(msg: string): string;
   dim(msg: string): string;
   buildLogFilePath: string;
-  graphLogFilePath: string;
-  writeLogs(append: boolean, buildResults?: d.BuildResults): void;
+  writeLogs(append: boolean): void;
 }
 
 

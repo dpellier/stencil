@@ -106,16 +106,6 @@ export function validatePaths(config: Config) {
     config.publicPath += '/';
   }
 
-  if (config.writeGraph) {
-    if (typeof config.graphLogFilePath !== 'string') {
-      config.graphLogFilePath = DEFAULT_GRAPH_LOG_FILE_NAME;
-    }
-    if (!path.isAbsolute(config.graphLogFilePath)) {
-      config.graphLogFilePath = normalizePath(path.join(config.rootDir, config.graphLogFilePath));
-    }
-    config.logger.graphLogFilePath = config.graphLogFilePath;
-  }
-
   if (config.writeLog) {
     if (typeof config.buildLogFilePath !== 'string') {
       config.buildLogFilePath = DEFAULT_BUILD_LOG_FILE_NAME;
@@ -125,6 +115,16 @@ export function validatePaths(config: Config) {
     }
     config.logger.buildLogFilePath = config.buildLogFilePath;
   }
+
+  if (config.writeStats) {
+    if (typeof config.buildStatsFilePath !== 'string') {
+      config.buildStatsFilePath = DEFAULT_STATS_JSON_FILE_NAME;
+    }
+    if (!path.isAbsolute(config.buildStatsFilePath)) {
+      config.buildStatsFilePath = normalizePath(path.join(config.rootDir, config.buildStatsFilePath));
+    }
+  }
+
 }
 
 
@@ -136,4 +136,4 @@ const DEFAULT_DIST_DIR = 'dist';
 const DEFAULT_COLLECTION_DIR = 'collection';
 const DEFAULT_TYPES_DIR = 'types';
 const DEFAULT_BUILD_LOG_FILE_NAME = 'stencil-build.log';
-const DEFAULT_GRAPH_LOG_FILE_NAME = 'stencil-graph.json';
+const DEFAULT_STATS_JSON_FILE_NAME = 'stencil-stats.json';

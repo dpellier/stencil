@@ -216,9 +216,9 @@ describe('cli', () => {
       argv = parseArgv(process);
       expect(argv.log).toBe(true);
 
-      process.argv[2] = '--graph';
+      process.argv[2] = '--stats';
       argv = parseArgv(process);
-      expect(argv.graph).toBe(true);
+      expect(argv.stats).toBe(true);
 
       process.argv[2] = '--config';
       process.argv[3] = '/my-config.js';

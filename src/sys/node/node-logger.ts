@@ -178,13 +178,9 @@ export class NodeLogger implements d.Logger {
     }
   }
 
-  writeLogs(append: boolean, buildResults: d.BuildResults) {
+  writeLogs(append: boolean) {
     if (this.buildLogFilePath) {
       try {
-        if (buildResults) {
-          this.queueWriteLog('F', [`files written: ${buildResults.filesWritten.length}`]);
-        }
-
         this.queueWriteLog('F', ['--------------------------------------']);
 
         const log = this.writeLogQueue.join('\n');
@@ -202,19 +198,6 @@ export class NodeLogger implements d.Logger {
         } else {
           fs.writeFileSync(this.buildLogFilePath, log);
         }
-
-      } catch (e) {}
-    }
-
-    if (this.graphLogFilePath && buildResults) {
-      try {
-        const graph = {
-          compiler: buildResults.compiler,
-          entries: buildResults.entries,
-          bundles: buildResults.bundles
-        };
-
-        fs.writeFileSync(this.graphLogFilePath, JSON.stringify(graph, null, 2));
 
       } catch (e) {}
     }

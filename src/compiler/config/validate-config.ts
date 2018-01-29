@@ -31,8 +31,8 @@ export function validateBuildConfig(config: Config, setEnvVariables?: boolean) {
     config.logLevel = config.logger.level;
   }
 
-  if (typeof config.writeGraph !== 'boolean') {
-    config.writeGraph = false;
+  if (typeof config.writeStats !== 'boolean') {
+    config.writeStats = false;
   }
 
   if (typeof config.writeLog !== 'boolean') {

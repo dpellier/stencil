@@ -1,8 +1,7 @@
-import { BuildBundle, BuildCtx, BuildEntry, BuildResults, CompilerCtx, Config, WatcherResults } from '../../declarations';
-import { catchError, hasError, pathJoin } from '../util';
-import { cleanDiagnostics } from '../../util/logger/logger-util';
+import { BuildCtx, CompilerCtx, Config, WatcherResults } from '../../declarations';
+import { catchError, hasError } from '../util';
 import { initWatcher } from '../watcher/watcher-init';
-import { DEFAULT_STYLE_MODE } from '../../util/constants';
+import { generateBuildResults, generateBuildStats } from './build-results';
 
 
 export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watcher: WatcherResults) {
@@ -47,7 +46,7 @@ export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watche
     return shouldAbort(compilerCtx, buildCtx);
   };
 
-  buildCtx.finish = () => {
+  buildCtx.finish = async () => {
     try {
       // setup watcher if need be
       initWatcher(config, compilerCtx, buildCtx);
@@ -62,8 +61,8 @@ export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watche
 }
 
 
-function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
-  const buildResults = generateBuildResults(config, compilerCtx, buildCtx);
+async function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
+  const buildResults = generateBuildResults(compilerCtx, buildCtx);
 
   // log any errors/warnings
   config.logger.printDiagnostics(buildResults.diagnostics);
@@ -95,13 +94,16 @@ function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCt
   // and add the duration to the build results
   buildCtx.timeSpan.finish(`${buildText} ${buildStatus}${watchText}`, statusColor, bold, true);
 
+  // write the build stats
+  await generateBuildStats(config, compilerCtx, buildCtx);
+
   // clear it all out for good measure
   for (const k in buildCtx) {
     (buildCtx as any)[k] = null;
   }
 
   // write all of our logs to disk if config'd to do so
-  config.logger.writeLogs(compilerCtx.isRebuild, buildResults);
+  config.logger.writeLogs(compilerCtx.isRebuild);
 
   // emit a build event, which happens for inital build and rebuilds
   compilerCtx.events.emit('build', buildResults);
@@ -110,82 +112,6 @@ function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCt
     // emit a rebuild event, which happens only for rebuilds
     compilerCtx.events.emit('rebuild', buildResults);
   }
-
-  return buildResults;
-}
-
-
-function generateBuildResults(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
-  // create the build results that get returned
-  const buildResults: BuildResults = {
-    buildId: buildCtx.buildId,
-    compiler: `${config.sys.compiler.name} v${config.sys.compiler.version}`,
-    diagnostics: cleanDiagnostics(buildCtx.diagnostics),
-    hasError: hasError(buildCtx.diagnostics),
-    aborted: buildCtx.aborted,
-    duration: Date.now() - buildCtx.startTime,
-    isRebuild: compilerCtx.isRebuild,
-    transpileBuildCount: buildCtx.transpileBuildCount,
-    bundleBuildCount: buildCtx.bundleBuildCount,
-    hasChangedJsText: buildCtx.hasChangedJsText,
-    filesWritten: buildCtx.filesWritten.sort(),
-    filesChanged: buildCtx.filesChanged.slice().sort(),
-    filesUpdated: buildCtx.filesUpdated.slice().sort(),
-    filesAdded: buildCtx.filesAdded.slice().sort(),
-    filesDeleted: buildCtx.filesDeleted.slice().sort(),
-    dirsAdded: buildCtx.dirsAdded.slice().sort(),
-    dirsDeleted: buildCtx.dirsDeleted.slice().sort(),
-
-    entries: [],
-
-    bundles: buildCtx.entryModules.map(en => {
-      const buildEntry: BuildBundle = {
-        components: (en.moduleFiles || []).map(m => m.cmpMeta.tagNameMeta).sort(),
-
-        outputFiles: (en.outputFileNames || []).slice().sort(),
-
-        inputFiles: (en.moduleFiles || []).map(m => {
-          return pathJoin(config, config.sys.path.relative(config.rootDir, m.jsFilePath));
-        }).sort()
-      };
-
-      const modes = en.modeNames.slice().sort();
-      if (modes.length > 1 || (modes.length === 1 && modes[0] !== DEFAULT_STYLE_MODE)) {
-        buildEntry.modes = modes;
-      }
-
-      return buildEntry;
-    })
-  };
-
-  buildCtx.entryPoints.forEach(ep => {
-    ep.forEach(ec => {
-      const buildEntry: BuildEntry = {
-        tag: ec.tag,
-        dependencyOf: ec.dependencyOf.slice()
-      };
-      buildResults.entries.push(buildEntry);
-    });
-  });
-
-  buildCtx.entryModules.map(en => {
-    const buildEntry: BuildBundle = {
-      components: (en.moduleFiles || []).map(m => m.cmpMeta.tagNameMeta).sort(),
-
-      outputFiles: (en.outputFileNames || []).slice().sort(),
-
-      inputFiles: (en.moduleFiles || []).map(m => {
-        return pathJoin(config, config.sys.path.relative(config.rootDir, m.jsFilePath));
-      }).sort()
-    };
-
-    const modes = en.modeNames.slice().sort();
-    if (modes.length > 1 || (modes.length === 1 && modes[0] !== DEFAULT_STYLE_MODE)) {
-      buildEntry.modes = modes;
-    }
-
-    return buildEntry;
-  });
 
   return buildResults;
 }
