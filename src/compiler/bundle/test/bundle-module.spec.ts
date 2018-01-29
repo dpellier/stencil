@@ -43,10 +43,10 @@ describe('bundle-module', () => {
       r = await rebuildListener;
 
       expect(r.diagnostics).toEqual([]);
-      expect(r.bundles).toHaveLength(2);
-      expect(r.bundles[0].components[0].tag).toBe('cmp-a');
-      expect(r.bundles[0].components[1].tag).toBe('cmp-b');
-      expect(r.bundles[1].components[0].tag).toBe('cmp-c');
+      expect(r.entries).toHaveLength(2);
+      expect(r.entries[0].components[0].tag).toBe('cmp-a');
+      expect(r.entries[0].components[1].tag).toBe('cmp-b');
+      expect(r.entries[1].components[0].tag).toBe('cmp-c');
 
       const secondBuildText = await c.fs.readFile('/www/build/app/cmp-a.js');
       expect(firstBuildText).toBe(secondBuildText);
@@ -66,10 +66,10 @@ describe('bundle-module', () => {
 
       const r = await c.build();
       expect(r.diagnostics).toEqual([]);
-      expect(r.bundles).toHaveLength(2);
-      expect(r.bundles[0].components[0].tag).toBe('cmp-a');
-      expect(r.bundles[0].components[1].tag).toBe('cmp-b');
-      expect(r.bundles[1].components[0].tag).toBe('cmp-c');
+      expect(r.entries).toHaveLength(2);
+      expect(r.entries[0].components[0].tag).toBe('cmp-a');
+      expect(r.entries[0].components[1].tag).toBe('cmp-b');
+      expect(r.entries[1].components[0].tag).toBe('cmp-c');
       expect(r.bundleBuildCount).toBe(2);
 
       expectFilesWritten(r,

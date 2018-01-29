@@ -48,7 +48,7 @@ describe('transpile', () => {
       expect(wroteFile(r, '/www/build/app/cmp-b.js')).toBe(false);
       expect(wroteFile(r, '/www/build/app/cmp-c.js')).toBe(false);
 
-      expect(r.bundles[0].components[0].tag).toEqual('cmp-a');
+      expect(r.entries[0].components[0].tag).toEqual('cmp-a');
     });
 
     it('should rebuild transpile for added directory', async () => {
@@ -84,9 +84,9 @@ describe('transpile', () => {
       expect(wroteFile(r, '/www/build/app/cmp-a.js')).toBe(false);
       expect(wroteFile(r, '/www/build/app/cmp-b.js')).toBe(true);
       expect(wroteFile(r, '/www/build/app/cmp-c.js')).toBe(true);
-      expect(r.bundles[0].components[0].tag).toEqual('cmp-a');
-      expect(r.bundles[1].components[0].tag).toEqual('cmp-b');
-      expect(r.bundles[2].components[0].tag).toEqual('cmp-c');
+      expect(r.entries[0].components[0].tag).toEqual('cmp-a');
+      expect(r.entries[1].components[0].tag).toEqual('cmp-b');
+      expect(r.entries[2].components[0].tag).toEqual('cmp-c');
       expect(r.hasChangedJsText).toBe(true);
     });
 
@@ -116,7 +116,7 @@ describe('transpile', () => {
       expect(r.diagnostics).toEqual([]);
 
       expect(wroteFile(r, '/www/build/app/cmp-a.js')).toBe(true);
-      expect(r.bundles[0].components[0].tag).toEqual('cmp-a');
+      expect(r.entries[0].components[0].tag).toEqual('cmp-a');
       expect(r.transpileBuildCount).toBe(1);
       expect(r.hasChangedJsText).toBe(true);
     });
@@ -151,7 +151,7 @@ describe('transpile', () => {
       expect(r.diagnostics).toEqual([]);
       expect(r.buildId).toBe(1);
       expect(r.isRebuild).toBe(true);
-      expect(r.bundles[0].components[0].tag).toEqual('cmp-a');
+      expect(r.entries[0].components[0].tag).toEqual('cmp-a');
       expect(r.transpileBuildCount).toBe(1);
       expect(r.transpileBuildCount).toBe(1);
       expect(r.hasChangedJsText).toBe(false);
