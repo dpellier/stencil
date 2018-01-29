@@ -47,23 +47,23 @@ describe('validation', () => {
 
   });
 
-  describe('writeGraph', () => {
+  describe('writeStats', () => {
 
-    it('set writeGraph true', () => {
-      config.writeGraph = true;
+    it('set writeStats true', () => {
+      config.writeStats = true;
       validateBuildConfig(config);
-      expect(config.writeGraph).toBe(true);
+      expect(config.writeStats).toBe(true);
     });
 
-    it('set writeGraph false', () => {
-      config.writeGraph = false;
+    it('set writeStats false', () => {
+      config.writeStats = false;
       validateBuildConfig(config);
-      expect(config.writeGraph).toBe(false);
+      expect(config.writeStats).toBe(false);
     });
 
-    it('default writeGraph false', () => {
+    it('default writeStats false', () => {
       validateBuildConfig(config);
-      expect(config.writeGraph).toBe(false);
+      expect(config.writeStats).toBe(false);
     });
 
   });

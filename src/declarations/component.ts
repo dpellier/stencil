@@ -62,7 +62,7 @@ export interface ComponentMeta {
   assetsDirsMeta?: AssetsMeta[];
   componentConstructor?: ComponentConstructor;
   componentClass?: string;
-  dependencies?: ComponentGraph;
+  dependencies?: ComponentDependencies;
   jsdoc?: JSDoc;
 }
 
@@ -173,7 +173,7 @@ export interface JSDoc {
 }
 
 
-export type ComponentGraph = string[];
+export type ComponentDependencies = string[];
 
 
 export interface ComponentInstance {

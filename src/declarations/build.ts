@@ -46,6 +46,8 @@ export interface BuildResults {
   filesUpdated: string[];
   filesAdded: string[];
   filesDeleted: string[];
+  bundles: BuildBundle[];
+  components: BuildComponent[];
 }
 
 
@@ -54,17 +56,18 @@ export interface BuildStats {
     name: string;
     version: string;
   };
+  components: BuildComponent[];
   bundles: BuildBundle[];
   entries: BuildComponent[][];
 }
 
 
 export interface BuildBundle {
-  components: string[];
-  outputFiles: {
+  components: BuildComponent[];
+  output: {
     filePath: string;
   }[];
-  inputFiles: {
+  input: {
     filePath: string;
   }[];
   modes?: string[];
@@ -73,7 +76,8 @@ export interface BuildBundle {
 
 export interface BuildComponent {
   tag: string;
-  dependencyOf: string[];
+  dependencyOf?: string[];
+  dependencies?: string[];
 }
 
 

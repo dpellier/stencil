@@ -2,18 +2,15 @@ import { BuildCtx, CompilerCtx, ComponentMeta, Config, ConfigBundle, EntryModule
 import { catchError } from '../util';
 import { DEFAULT_STYLE_MODE, ENCAPSULATION } from '../../util/constants';
 import { generateComponentEntries } from './entry-components';
-import { setComponentGraphs } from './component-dependencies';
 import { requiresScopedStyles } from '../style/style';
 import { validateComponentTag } from '../config/validate-component';
 
 
-export async function generateEntryModules(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
+export function generateEntryModules(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
   buildCtx.entryModules = [];
 
   try {
     const allModules = Object.keys(compilerCtx.moduleFiles).map(filePath => compilerCtx.moduleFiles[filePath]);
-
-    await setComponentGraphs(compilerCtx, allModules);
 
     const userConfigEntryModulesTags = getUserConfigEntryTags(config.bundles, allModules);
 

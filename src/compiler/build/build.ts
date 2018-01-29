@@ -48,7 +48,7 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
 
     // we've got the compiler context filled with app modules and collection dependency modules
     // figure out how all these components should be connected
-    await generateEntryModules(config, compilerCtx, buildCtx);
+    generateEntryModules(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // bundle modules and styles into separate files phase

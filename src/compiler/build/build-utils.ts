@@ -62,7 +62,7 @@ export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watche
 
 
 async function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
-  const buildResults = generateBuildResults(compilerCtx, buildCtx);
+  const buildResults = generateBuildResults(config, compilerCtx, buildCtx);
 
   // log any errors/warnings
   config.logger.printDiagnostics(buildResults.diagnostics);
@@ -95,7 +95,7 @@ async function finishBuild(config: Config, compilerCtx: CompilerCtx, buildCtx: B
   buildCtx.timeSpan.finish(`${buildText} ${buildStatus}${watchText}`, statusColor, bold, true);
 
   // write the build stats
-  await generateBuildStats(config, compilerCtx, buildCtx);
+  await generateBuildStats(config, compilerCtx, buildCtx, buildResults);
 
   // clear it all out for good measure
   for (const k in buildCtx) {
