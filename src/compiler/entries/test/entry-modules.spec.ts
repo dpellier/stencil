@@ -265,6 +265,7 @@ describe('graph-dependencies', () => {
       const allModules: ModuleFile[] = [
         { cmpMeta: { tagNameMeta: 'cmp-a', encapsulation: ENCAPSULATION.NoEncapsulation } },
         { cmpMeta: { tagNameMeta: 'cmp-b', encapsulation: ENCAPSULATION.NoEncapsulation } },
+        {/* empty on purpose */}
       ];
       const entryPoints: EntryPoint[] = [
         [ { tag: 'cmp-a' }, { tag: 'cmp-b' } ]

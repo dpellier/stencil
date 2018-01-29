@@ -102,7 +102,7 @@ export function regroupEntryModules(allModules: ModuleFile[], entryPoints: Entry
 
   entryPoints.forEach(entryPoint => {
     const entryModules = allModules.filter(m => {
-      return entryPoint.some(ep => ep.tag === m.cmpMeta.tagNameMeta);
+      return entryPoint.some(ep => m.cmpMeta && ep.tag === m.cmpMeta.tagNameMeta);
     });
 
     const noEncapsulation = entryModules.filter(m => {
