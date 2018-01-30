@@ -11,7 +11,7 @@ import { generateIndexHtml } from '../html/generate-index-html';
 import { generateReadmes } from '../docs/generate-readmes';
 import { generateStyles } from '../style/style';
 import { initIndexHtml } from '../html/init-index-html';
-import { loadCollectionModules } from '../manifest/load-collections';
+import { loadCollections } from '../collections/load-collections';
 import { prerenderApp } from '../prerender/prerender-app';
 import { transpileAppModules } from '../transpile/transpile-app-modules';
 
@@ -36,7 +36,8 @@ export async function build(config: Config, compilerCtx?: CompilerCtx, watcher?:
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // load colleciton data from all the dependent collections
-    await loadCollectionModules(config, compilerCtx, buildCtx);
+    // and upgrade modules as necessary
+    await loadCollections(config, compilerCtx, buildCtx);
     if (buildCtx.shouldAbort()) return buildCtx.finish();
 
     // async scan the src directory for ts files

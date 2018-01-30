@@ -1,13 +1,14 @@
 import { BuildCtx, CompilerCtx, Config, WatcherResults } from '../../declarations';
 import { catchError, hasError } from '../util';
-import { initWatcher } from '../watcher/watcher-init';
 import { generateBuildResults, generateBuildStats } from './build-results';
+import { initWatcher } from '../watcher/watcher-init';
 
 
 export function getBuildContext(config: Config, compilerCtx: CompilerCtx, watcher: WatcherResults) {
   // do a full build if there is no watcher
   // or the watcher said the config has updated
-  const requiresFullBuild = !watcher || watcher.configUpdated;
+  // or we've never had a successful build yet
+  const requiresFullBuild = !watcher || watcher.configUpdated || !compilerCtx.hasSuccessfulBuild;
 
   const isRebuild = !!watcher;
   compilerCtx.isRebuild = isRebuild;

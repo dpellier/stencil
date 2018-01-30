@@ -1,17 +1,55 @@
+import { BuildCtx, CompilerCtx, Config, CopyTask, DependentCollection, Manifest, ModuleFile } from '../../declarations';
+import { catchError } from '../util';
 import { COLLECTION_DEPENDENCIES_DIR, parseDependentManifest } from './manifest-data';
-import { CompilerCtx, Config, CopyTask, DependentCollection, Manifest, ModuleFile } from '../../declarations';
 import { normalizePath } from '../util';
+import { upgradeCollection } from './upgrade-collection';
 
 
-export function loadDependentManifests(config: Config, ctx: CompilerCtx): Promise<Manifest[]> {
+export async function loadCollections(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
+  if (!buildCtx.requiresFullBuild) {
+    return;
+  }
+
+  const timeSpan = config.logger.createTimeSpan(`load collections started`, true);
+
+  try {
+    const dependentManifests = await loadDependentManifests(config, compilerCtx, buildCtx);
+
+    mergeDependentManifests(compilerCtx, dependentManifests);
+
+  } catch (e) {
+    catchError(buildCtx.diagnostics, e);
+  }
+
+  timeSpan.finish(`load collections finished`);
+}
+
+
+export function mergeDependentManifests(compilerCtx: CompilerCtx, dependentManifests: Manifest[]) {
+  // the appManifest is the single source of manifest data
+  // we need to merge what we've learned about the
+  // dependent manifests into the one app manifest object
+
+  dependentManifests.forEach(dependentManifest => {
+    // append any dependent manifest data onto the appManifest
+    dependentManifest.modulesFiles.forEach(dependentModuleFile => {
+      if (!compilerCtx.moduleFiles[dependentModuleFile.jsFilePath]) {
+        compilerCtx.moduleFiles[dependentModuleFile.jsFilePath] = dependentModuleFile;
+      }
+    });
+  });
+}
+
+
+export function loadDependentManifests(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx): Promise<Manifest[]> {
   // load up all of the collections which this app is dependent on
   return Promise.all(config.collections.map(configCollection => {
-    return loadDependentManifest(config, ctx, configCollection);
+    return loadDependentManifest(config, compilerCtx, buildCtx, configCollection);
   }));
 }
 
 
-async function loadDependentManifest(config: Config, compilerCtx: CompilerCtx, dependentCollection: DependentCollection) {
+async function loadDependentManifest(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, dependentCollection: DependentCollection) {
 
   let dependentManifest = compilerCtx.dependentManifests.find(m => m.manifestName === dependentCollection.name);
   if (dependentManifest) {
@@ -55,6 +93,10 @@ async function loadDependentManifest(config: Config, compilerCtx: CompilerCtx, d
     dependentManifestDir,
     dependentManifestJson
   );
+
+  // Look at all dependent components from outside collections and
+  // upgrade the components to be compatible with this version if need be
+  await upgradeCollection(config, compilerCtx, buildCtx, dependentManifest);
 
   await copySourceCollectionComponentsToDistribution(config, compilerCtx, dependentManifest.modulesFiles);
 

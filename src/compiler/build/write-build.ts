@@ -2,7 +2,7 @@ import { BuildCtx, CompilerCtx, Config } from '../../declarations';
 import { catchError } from '../util';
 import { copyComponentAssets } from '../copy/copy-assets';
 import { generateDistribution } from './distribution';
-import { writeAppManifest } from '../manifest/manifest-data';
+import { writeAppManifest } from '../collections/manifest-data';
 
 
 export async function writeBuildFiles(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx) {
