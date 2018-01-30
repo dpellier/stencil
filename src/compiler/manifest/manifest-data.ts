@@ -144,6 +144,7 @@ export function serializeComponent(config: Config, manifestDir: string, moduleFi
   const compiledComponentRelativeDirPath = normalizePath(config.sys.path.dirname(compiledComponentRelativeFilePath));
 
   serializeTag(cmpData, cmpMeta);
+  serializeComponentDependencies(cmpData, cmpMeta);
   serializeComponentClass(cmpData, cmpMeta);
   serializeComponentPath(config, manifestDir, moduleFile, compiledComponentAbsoluteFilePath, cmpData);
   serializeStyles(config, moduleFile, compiledComponentRelativeDirPath, cmpData, cmpMeta);
@@ -177,6 +178,7 @@ export function parseComponentDataToModuleFile(config: Config, manifest: Manifes
   const cmpMeta = moduleFile.cmpMeta;
 
   parseTag(cmpData, cmpMeta);
+  parseComponentDependencies(cmpData, cmpMeta);
   parseComponentClass(cmpData, cmpMeta);
   parseModuleJsFilePath(config, manifestDir, cmpData, moduleFile);
   parseStyles(config, manifestDir, cmpData, cmpMeta);
@@ -230,6 +232,19 @@ function parseModuleJsFilePath(config: Config, manifestDir: string, cmpData: Com
 
   // remember the original component path from its collection
   moduleFile.originalCollectionComponentPath = cmpData.componentPath;
+}
+
+
+function serializeComponentDependencies(cmpData: ComponentData, cmpMeta: ComponentMeta) {
+  cmpData.dependencies = (cmpMeta.dependencies || []).sort();
+}
+
+function parseComponentDependencies(cmpData: ComponentData, cmpMeta: ComponentMeta) {
+  if (invalidArrayData(cmpData.dependencies)) {
+    cmpMeta.dependencies = [];
+  } else {
+    cmpMeta.dependencies = cmpData.dependencies.sort();
+  }
 }
 
 

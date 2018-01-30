@@ -81,6 +81,7 @@ export interface ComponentData {
   tag?: string;
   componentPath?: string;
   componentClass?: string;
+  dependencies?: string[];
   styles?: StylesData;
   props?: PropData[];
   states?: StateData[];

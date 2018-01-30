@@ -332,6 +332,14 @@ describe('manifest components', () => {
     expect(b.cmpMeta.componentClass).toBe(a.componentClass);
   });
 
+  it('component dependencies', () => {
+    a.dependencies = ['cmp-a', 'cmp-b'];
+    const cmpData = serializeComponent(config, manifestDir, moduleFile);
+    expect(cmpData.dependencies).toEqual(['cmp-a', 'cmp-b']);
+    b = parseComponentDataToModuleFile(config, manifest, manifestDir, cmpData);
+    expect(b.cmpMeta.dependencies).toEqual(a.dependencies);
+  });
+
   it('tag name', () => {
     a.tagNameMeta = 'ion-tag';
     const cmpData = serializeComponent(config, manifestDir, moduleFile);

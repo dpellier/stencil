@@ -37,17 +37,17 @@ function createDoUpgrade(config: Config, compilerCtx: CompilerCtx, entryModules:
     const upgradeTransforms: ts.TransformerFactory<ts.SourceFile>[] = (upgrades.map((upgrade) => {
       switch (upgrade) {
         case CompilerUpgrade.JSX_Upgrade_From_0_0_5:
-          config.logger.debug(`JSX_Upgrade_From_0_0_5, manifestCompilerVersion: ${manifest.compiler.version}`);
+          config.logger.debug(`JSX_Upgrade_From_0_0_5, version: ${manifest.compiler.version}`);
           return upgradeFrom0_0_5 as ts.TransformerFactory<ts.SourceFile>;
 
         case CompilerUpgrade.Metadata_Upgrade_From_0_1_0:
-          config.logger.debug(`Metadata_Upgrade_From_0_1_0, manifestCompilerVersion: ${manifest.compiler.version}`);
+          config.logger.debug(`Metadata_Upgrade_From_0_1_0, version: ${manifest.compiler.version}`);
           return () => {
             return upgradeFromMetadata(entryModules);
           };
 
-        case CompilerUpgrade.REMOVE_STENCIL_IMPORTS:
-          config.logger.debug(`REMOVE_STENCIL_IMPORTS, manifestCompilerVersion: ${manifest.compiler.version}`);
+        case CompilerUpgrade.Remove_Stencil_Imports:
+          config.logger.debug(`Remove_Stencil_Imports, version: ${manifest.compiler.version}`);
           return (transformContext: ts.TransformationContext) => {
             return removeStencilImports()(transformContext);
           };
