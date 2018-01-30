@@ -17,13 +17,13 @@ export async function upgradeCollection(config: Config, compilerCtx: CompilerCtx
       return;
     }
 
-    const timeSpan = config.logger.createTimeSpan(`upgrade ${manifest.manifestName} started`, true);
+    const timeSpan = config.logger.createTimeSpan(`upgrade ${manifest.collectionName} started`, true);
 
     const doUpgrade = createDoUpgrade(config, compilerCtx);
 
     await doUpgrade(manifest, upgradeTransforms);
 
-    timeSpan.finish(`upgrade ${manifest.manifestName} finished`);
+    timeSpan.finish(`upgrade ${manifest.collectionName} finished`);
 
   } catch (e) {
     catchError(buildCtx.diagnostics, e);
@@ -37,23 +37,23 @@ function createDoUpgrade(config: Config, compilerCtx: CompilerCtx) {
     const upgradeTransforms: ts.TransformerFactory<ts.SourceFile>[] = (upgrades.map((upgrade) => {
       switch (upgrade) {
         case CompilerUpgrade.JSX_Upgrade_From_0_0_5:
-          config.logger.debug(`JSX_Upgrade_From_0_0_5, ${manifest.manifestName}, compiled by v${manifest.compiler.version}`);
+          config.logger.debug(`JSX_Upgrade_From_0_0_5, ${manifest.collectionName}, compiled by v${manifest.compiler.version}`);
           return upgradeFrom0_0_5 as ts.TransformerFactory<ts.SourceFile>;
 
         case CompilerUpgrade.Metadata_Upgrade_From_0_1_0:
-          config.logger.debug(`Metadata_Upgrade_From_0_1_0, ${manifest.manifestName}, compiled by v${manifest.compiler.version}`);
+          config.logger.debug(`Metadata_Upgrade_From_0_1_0, ${manifest.collectionName}, compiled by v${manifest.compiler.version}`);
           return () => {
             return upgradeFromMetadata(compilerCtx.moduleFiles);
           };
 
         case CompilerUpgrade.Remove_Stencil_Imports:
-          config.logger.debug(`Remove_Stencil_Imports, ${manifest.manifestName}, compiled by v${manifest.compiler.version}`);
+          config.logger.debug(`Remove_Stencil_Imports, ${manifest.collectionName}, compiled by v${manifest.compiler.version}`);
           return (transformContext: ts.TransformationContext) => {
             return removeStencilImports()(transformContext);
           };
 
         case CompilerUpgrade.Add_Component_Dependencies:
-          config.logger.debug(`Add_Component_Dependencies, ${manifest.manifestName}, compiled by v${manifest.compiler.version}`);
+          config.logger.debug(`Add_Component_Dependencies, ${manifest.collectionName}, compiled by v${manifest.compiler.version}`);
           return (transformContext: ts.TransformationContext) => {
             return componentDependencies(compilerCtx.moduleFiles)(transformContext);
           };

@@ -9,7 +9,7 @@ export interface Config {
   buildStatsFilePath?: string;
   bundles?: ConfigBundle[];
   collectionDir?: string;
-  collections?: DependentCollection[];
+  collections?: ConfigCollection[];
   configPath?: string;
   copy?: CopyTasks;
   devMode?: boolean;
@@ -62,7 +62,7 @@ export interface ConfigBundle {
 }
 
 
-export interface DependentCollection {
+export interface ConfigCollection {
   name: string;
   includeBundledOnly?: boolean;
 }

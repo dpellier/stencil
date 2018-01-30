@@ -58,15 +58,18 @@ export async function generateAppGlobalContents(config: Config, compilerCtx: Com
 
 
 async function loadDependentGlobalJsContents(config: Config, compilerCtx: CompilerCtx, buildCtx: BuildCtx, sourceTarget: SourceTarget): Promise<string[]> {
-  if (!compilerCtx.dependentManifests) {
+  if (!compilerCtx.collections) {
     return [];
   }
 
-  const dependentManifests = compilerCtx.dependentManifests
-                                .filter(m => m.global && m.global.jsFilePath);
+  const collections = Object.keys(compilerCtx.collections)
+    .map(collectionName => {
+      return compilerCtx.collections[collectionName];
+    })
+    .filter(m => m.global && m.global.jsFilePath);
 
-  return Promise.all(dependentManifests.map(dependentManifest => {
-    return bundleProjectGlobal(config, compilerCtx, buildCtx, sourceTarget, dependentManifest.manifestName, dependentManifest.global.jsFilePath);
+  return Promise.all(collections.map(collectionManifest => {
+    return bundleProjectGlobal(config, compilerCtx, buildCtx, sourceTarget, collectionManifest.collectionName, collectionManifest.global.jsFilePath);
   }));
 }
 

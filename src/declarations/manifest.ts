@@ -2,7 +2,7 @@ import * as d from './index';
 
 
 export interface Manifest {
-  manifestName?: string;
+  collectionName?: string;
   modulesFiles?: ModuleFile[];
   entries?: d.EntryModule[];
   global?: ModuleFile;

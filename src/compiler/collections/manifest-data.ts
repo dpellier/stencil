@@ -73,7 +73,7 @@ export function serializeAppManifest(config: Config, manifestDir: string, module
 export function parseDependentManifest(config: Config, collectionName: string, includeBundledOnly: boolean, manifestDir: string, manifestJson: string) {
   const manifestData: ManifestData = JSON.parse(manifestJson);
   const manifest: Manifest = {
-    manifestName: collectionName,
+    collectionName: collectionName,
     compiler: {
       name: manifestData.compiler.name,
       version: manifestData.compiler.version,
