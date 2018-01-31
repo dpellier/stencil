@@ -6,7 +6,6 @@ export interface Manifest {
   modulesFiles?: ModuleFile[];
   entries?: d.EntryModule[];
   global?: ModuleFile;
-  dependentManifests?: Manifest[];
   compiler?: ManifestCompiler;
 }
 

@@ -9,31 +9,13 @@ export async function loadCollections(config: Config, compilerCtx: CompilerCtx, 
   const timeSpan = config.logger.createTimeSpan(`load collections started`, true);
 
   try {
-    const dependentManifests = await loadConfigCollections(config, compilerCtx, buildCtx);
-
-    mergeCollections(compilerCtx, dependentManifests);
+    await loadConfigCollections(config, compilerCtx, buildCtx);
 
   } catch (e) {
     catchError(buildCtx.diagnostics, e);
   }
 
   timeSpan.finish(`load collections finished`);
-}
-
-
-export function mergeCollections(compilerCtx: CompilerCtx, collectionManifests: Manifest[]) {
-  // the appManifest is the single source of manifest data
-  // we need to merge what we've learned about the
-  // collection manifests into the one app manifest object
-
-  collectionManifests.forEach(collectionManifest => {
-    // append any collection manifest data onto the appManifest
-    collectionManifest.modulesFiles.forEach(collectionModuleFile => {
-      if (!compilerCtx.moduleFiles[collectionModuleFile.jsFilePath]) {
-        compilerCtx.moduleFiles[collectionModuleFile.jsFilePath] = collectionModuleFile;
-      }
-    });
-  });
 }
 
 
@@ -89,6 +71,13 @@ async function loadConfigCollection(config: Config, compilerCtx: CompilerCtx, bu
     dependentManifestDir,
     dependentManifestJson
   );
+
+  // append any collection manifest data onto the appManifest
+  collectionManifest.modulesFiles.forEach(collectionModuleFile => {
+    if (!compilerCtx.moduleFiles[collectionModuleFile.jsFilePath]) {
+      compilerCtx.moduleFiles[collectionModuleFile.jsFilePath] = collectionModuleFile;
+    }
+  });
 
   // Look at all dependent components from outside collections and
   // upgrade the components to be compatible with this version if need be

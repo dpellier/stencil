@@ -7,7 +7,6 @@ export interface BuildCtx {
   diagnostics: d.Diagnostic[];
   entryModules: d.EntryModule[];
   entryPoints: d.EntryPoint[];
-  moduleFiles: d.ModuleFile[];
   global?: d.ModuleFile;
   transpileBuildCount: number;
   bundleBuildCount: number;

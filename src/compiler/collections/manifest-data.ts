@@ -1,5 +1,5 @@
 import { AssetsMeta, BuildCtx, CompilerCtx, ComponentData, ComponentMeta, Config,
-  EventData, ExternalStyleMeta, ListenMeta, ListenerData, Manifest, ManifestCompiler,
+  EntryModule, EventData, ExternalStyleMeta, ListenMeta, ListenerData, Manifest, ManifestCompiler,
   ManifestData, ModuleFile, PropData, StyleData, StyleMeta } from '../../declarations';
 import { COLLECTION_MANIFEST_FILE_NAME, ENCAPSULATION, MEMBER_TYPE, PROP_TYPE } from '../../util/constants';
 import { normalizePath } from '../util';
@@ -23,7 +23,7 @@ export async function writeAppManifest(config: Config, compilerCtx: CompilerCtx,
 
   // serialize the manifest into a json string and
   // add it to the list of files we need to write when we're ready
-  const manifestData = serializeAppManifest(config, manifestDir, buildCtx.moduleFiles, buildCtx.global);
+  const manifestData = serializeAppManifest(config, manifestDir, buildCtx.entryModules, buildCtx.global);
 
   if (config.generateDistribution) {
     // don't bother serializing/writing the manifest if we're not creating a distribution
@@ -34,7 +34,7 @@ export async function writeAppManifest(config: Config, compilerCtx: CompilerCtx,
 }
 
 
-export function serializeAppManifest(config: Config, manifestDir: string, moduleFiles: ModuleFile[], globalModule: ModuleFile) {
+export function serializeAppManifest(config: Config, manifestDir: string, entryModules: EntryModule[], globalModule: ModuleFile) {
   // create the single manifest we're going to fill up with data
   const manifestData: ManifestData = {
     components: [],
@@ -46,13 +46,15 @@ export function serializeAppManifest(config: Config, manifestDir: string, module
   };
 
   // add component data for each of the manifest files
-  moduleFiles.forEach(modulesFile => {
-    if (!modulesFile.excludeFromCollection) {
-      const cmpData = serializeComponent(config, manifestDir, modulesFile);
-      if (cmpData) {
-        manifestData.components.push(cmpData);
+  entryModules.forEach(entryModule => {
+    entryModule.moduleFiles.forEach(moduleFile => {
+      if (!moduleFile.excludeFromCollection) {
+        const cmpData = serializeComponent(config, manifestDir, moduleFile);
+        if (cmpData) {
+          manifestData.components.push(cmpData);
+        }
       }
-    }
+    });
   });
 
   // sort it alphabetically, cuz
