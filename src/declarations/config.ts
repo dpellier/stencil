@@ -5,10 +5,11 @@ export interface Config {
   buildAppCore?: boolean;
   buildDir?: string;
   buildEs5?: boolean;
-  buildStats?: boolean;
-  bundles?: d.ManifestBundle[];
+  buildLogFilePath?: string;
+  buildStatsFilePath?: string;
+  bundles?: ConfigBundle[];
   collectionDir?: string;
-  collections?: DependentCollection[];
+  collections?: ConfigCollection[];
   configPath?: string;
   copy?: CopyTasks;
   devMode?: boolean;
@@ -46,6 +47,8 @@ export interface Config {
   typesDir?: string;
   watch?: boolean;
   watchIgnoredRegex?: RegExp;
+  writeLog?: boolean;
+  writeStats?: boolean;
   wwwDir?: string;
   wwwIndexHtml?: string;
 
@@ -54,7 +57,12 @@ export interface Config {
 }
 
 
-export interface DependentCollection {
+export interface ConfigBundle {
+  components: string[];
+}
+
+
+export interface ConfigCollection {
   name: string;
   includeBundledOnly?: boolean;
 }
